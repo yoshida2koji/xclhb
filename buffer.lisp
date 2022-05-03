@@ -55,14 +55,14 @@
   (aref buffer offset))
 
 (define-inline read-card16 (buffer offset)
-  (logior (ash (aref buffer (+ offset 1)) 8)
-          (aref buffer offset)))
+  (logior (ash (aref buffer offset) 8)
+          (aref buffer (+ offset 1))))
 
 (define-inline read-card32 (buffer offset)
-  (logior (ash (aref buffer (+ offset 3)) 24)
-          (ash (aref buffer (+ offset 2)) 16)
-          (ash (aref buffer (+ offset 1)) 8)
-          (aref buffer offset)))
+  (logior (ash (aref buffer offset) 24)
+          (ash (aref buffer (+ offset 1)) 16)
+          (ash (aref buffer (+ offset 2)) 8)
+          (aref buffer (+ offset 3))))
 
 (define-inline read-int8 (buffer offset)
   (card8->int8 (read-card8 buffer offset)))
@@ -77,14 +77,14 @@
   (setf (aref buffer offset) value))
 
 (define-inline write-card16 (buffer offset value)
-  (setf (aref buffer offset) (ldb (cl:byte 8 0) value)
-        (aref buffer (+ offset 1)) (ldb (cl:byte 8 8) value)))
+  (setf (aref buffer offset) (ldb (cl:byte 8 8) value)
+        (aref buffer (+ offset 1)) (ldb (cl:byte 8 0) value)))
 
 (define-inline write-card32 (buffer offset value)
-  (setf (aref buffer offset) (ldb (cl:byte 8 0) value)
-        (aref buffer (+ offset 1)) (ldb (cl:byte 8 8) value)
-        (aref buffer (+ offset 2)) (ldb (cl:byte 8 16) value)
-        (aref buffer (+ offset 3)) (ldb (cl:byte 8 24) value)))
+  (setf (aref buffer offset) (ldb (cl:byte 8 24) value)
+        (aref buffer (+ offset 1)) (ldb (cl:byte 8 16) value)
+        (aref buffer (+ offset 2)) (ldb (cl:byte 8 8) value)
+        (aref buffer (+ offset 3)) (ldb (cl:byte 8 0) value)))
 
 (define-inline write-int8 (buffer offset value)
   (write-card8 buffer offset (int8->card8 value)))
