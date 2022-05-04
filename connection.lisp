@@ -79,15 +79,21 @@
                        buffer (make-offset))
               status))))
 
+#+ (or sbcl ecl)
 (defun make-x-stream ()
   (let ((socket (make-instance 'sb-bsd-sockets:local-socket :type :stream)))
     (sb-bsd-sockets:socket-connect socket "/tmp/.X11-unix/X0")
     (sb-bsd-sockets:socket-make-stream socket
-                                       :timeout 1
                                        :element-type '(unsigned-byte 8)
                                        :auto-close t
                                        :input t
                                        :output t)))
+#+ccl
+(defun make-x-stream ()
+  (ccl::make-socket :connect :active
+                    :address-family  :file
+                    :auto-close t
+                    :remote-filename "/tmp/.X11-unix/X0"))
 
 (defun x-connect ()
   (let ((stream (make-x-stream)))

@@ -5,7 +5,9 @@
 (defmacro defglobal (name value &optional doc)
   #+sbcl
   `(sb-ext:defglobal ,name ,value ,doc)
-  #-sbcl
+  #+ccl
+  `(ccl:defglobal ,name ,value ,doc)
+  #-(or sbcl ccl)
   `(defvar ,name ,value ,doc))
 
 (defmacro defglobals (&rest forms)
