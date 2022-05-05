@@ -6,8 +6,8 @@
           extension-error-base extension-major-opcode
           set-keycode-keysym-table))
 
-(defmacro with-connected-client ((client) &body body)
-  `(multiple-value-bind (,client err) (x-connect)
+(defmacro with-connected-client ((client &optional host) &body body)
+  `(multiple-value-bind (,client err) (x-connect ,host)
      (when err
        (error "connection error ~a" err))
      (unwind-protect

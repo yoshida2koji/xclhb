@@ -80,23 +80,35 @@
               status))))
 
 #+ (or sbcl ecl)
-(defun make-x-stream ()
-  (let ((socket (make-instance 'sb-bsd-sockets:local-socket :type :stream)))
-    (sb-bsd-sockets:socket-connect socket "/tmp/.X11-unix/X0")
+(defun make-x-stream (&optional host)
+  (let ((socket (if host
+                    (make-instance 'sb-bsd-sockets:inet-socket :type :stream :protocol :tcp)
+                    (make-instance 'sb-bsd-sockets:local-socket :type :stream))))
+    (if host
+        (sb-bsd-sockets:socket-connect socket
+                                       (sb-bsd-sockets:host-ent-address (sb-bsd-sockets:get-host-by-name host))
+                                       6000)
+        (sb-bsd-sockets:socket-connect socket "/tmp/.X11-unix/X0"))
     (sb-bsd-sockets:socket-make-stream socket
                                        :element-type '(unsigned-byte 8)
                                        :auto-close t
                                        :input t
                                        :output t)))
 #+ccl
-(defun make-x-stream ()
-  (ccl::make-socket :connect :active
-                    :address-family  :file
+(defun make-x-stream (&optional host)
+  (if host
+      (ccl::make-socket :connect :active
+                        :address-family :internet
+                        :auto-close t
+                        :remote-host host
+                        :remote-port 6000)
+      (ccl::make-socket :connect :active
+                    :address-family :file
                     :auto-close t
-                    :remote-filename "/tmp/.X11-unix/X0"))
+                        :remote-filename "/tmp/.X11-unix/X0")))
 
-(defun x-connect ()
-  (let ((stream (make-x-stream)))
+(defun x-connect (&optional host)
+  (let ((stream (make-x-stream host)))
     ;; request
     (destructuring-bind (auth-name auth-data) (get-auth-info)
       (let* ((setup-request (make-setup-request :byte-order #x42 ; msb
