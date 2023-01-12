@@ -1,7 +1,7 @@
 (in-package :xclhb)
 
 (export '(set-default-error-handler set-error-handler
-          set-event-handler process-input))
+          set-event-handler process-input process-input-one))
 
 ;;; error
 (defun set-default-error-handler (client handler)
@@ -52,14 +52,19 @@
         (declare (dynamic-extent offset))
         (funcall handler (funcall reader buf offset))))))
 
+(defun process-input-one (client &key wait-p)
+  (let-client (stream input-buffer) client
+    (cond ((or wait-p (listen stream))
+           (read-sequence input-buffer stream :end 32)
+           (let ((type (read-card8 input-buffer 0)))
+             (case type
+               (0 (process-error client input-buffer))
+               (1 (process-reply client input-buffer))
+               (otherwise (process-event client type input-buffer))))
+           t)
+          (t nil))))
 
 (defun process-input (client)
-  (let-client (stream input-buffer) client
-    (when (listen stream)
-      (read-sequence input-buffer stream :end 32)
-      (let ((type (read-card8 input-buffer 0)))
-        (case type
-          (0 (process-error client input-buffer))
-          (1 (process-reply client input-buffer))
-          (otherwise (process-event client type input-buffer))))
-      (process-input client))))
+  (when (process-input-one client)
+    (process-input client)))
+

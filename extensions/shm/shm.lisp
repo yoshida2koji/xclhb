@@ -1,9 +1,8 @@
-(defpackage :xclhb-shm
+(uiop:define-package :xclhb-shm
   (:use :cl :struct+ :xclhb)
   (:shadowing-import-from
    :xclhb
-   :atom :byte :char :format)
-  (:local-nicknames (:x :xclhb)))
+   :atom :byte :char :format))
 
 (in-package :xclhb-shm)
 
@@ -16,7 +15,7 @@
 (defun completion-event-code (client)
   (extension-event-base client +extension-name+))
 
-(defstruct+ completion-event ()
+(defstruct+ completion-event (:export-all-p t :include x-event)
   (drawable 0 :type drawable)
   (minor-event 0 :type card16)
   (major-event 0 :type byte)
@@ -57,7 +56,7 @@
       (setf (client-request-sequence-number client) (+ seq-no 1))
       seq-no)))
 
-(defstruct+ query-version-reply ()
+(defstruct+ query-version-reply (:export-all-p t :include x-reply)
   (shared-pixmaps 0 :type bool)
   (major-version 0 :type card16)
   (minor-version 0 :type card16)
@@ -167,7 +166,7 @@
       (setf (client-request-sequence-number client) (+ seq-no 1))
       seq-no)))
 
-(defstruct+ shm-get-image-reply ()
+(defstruct+ shm-get-image-reply (:export-all-p t :include x-reply)
   (depth 0 :type card8)
   (visual 0 :type visualid)
   (size 0 :type card32))
@@ -208,14 +207,14 @@
 
 (export 'init)
 (defun init (client)
-  (x:init-extension client +extension-name+)
-  (setf (aref x::*read-event-functions* (completion-event-code client)) #'read-completion-event)
-  (setf (aref x::*error-names* (x:extension-error-base client +extension-name+)) "bad-seg")
-  (let ((major-opcode (x:extension-major-opcode client +extension-name+))
+  (init-extension client +extension-name+)
+  (setf (aref xclhb::*read-event-functions* (completion-event-code client)) #'read-completion-event)
+  (setf (aref xclhb::*error-names* (extension-error-base client +extension-name+)) "bad-seg")
+  (let ((major-opcode (extension-major-opcode client +extension-name+))
         (readers (make-array 8 :initial-element nil)))
     (setf (aref readers 0) #'read-query-version-reply)
     (setf (aref readers 4) #'read-shm-get-image-reply)
-    (setf (aref x::*read-reply-functions* major-opcode) readers)))
+    (setf (aref xclhb::*read-reply-functions* major-opcode) readers)))
 
 (cffi:defcfun "shmget" :int
   (key :int)

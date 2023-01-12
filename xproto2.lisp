@@ -6,7 +6,7 @@
 (progn
   (export '+client-message-event+)
   (defconstant +client-message-event+ 33)
-  (defstruct+ client-message-event ()
+  (defstruct+ client-message-event (:export-all-p t :include x-event)
     (format 0 :type card8)
     (window 0 :type window)
     (type 0 :type atom)

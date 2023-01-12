@@ -185,7 +185,7 @@
 (defmacro define-struct (name fields)
   (let ((length-form (struct-length name fields)))
     `(progn
-       (defstruct+ ,name ()
+       (defstruct+ ,name (:export-all-p t)
          ,@(fields->slots fields))
        (define-at-compile ,(intern-name name "~a-length-form") ()
          ,(if (consp length-form)
@@ -203,6 +203,9 @@
          (,(intern-name name "let-~a") ,(field-names fields) str
           ,@(fields->write-forms fields))))))
 
+(export 'x-event)
+(defstruct x-event)
+
 (defmacro define-event (name code fields)
   (unless (member name '(client-message ge-generic))
     (let* ((base-name (intern-name name "~a-event"))
@@ -212,7 +215,7 @@
       `(progn
          (export ',constant-name)
          (defconstant ,constant-name ,code)
-         (defstruct+ ,base-name ()
+         (defstruct+ ,base-name (:export-all-p t :include x-event)
            ,@(fields->slots fields))
          (defun ,reader-name (buffer offset)
            (let ((str (,(intern-name base-name "make-~a"))))
@@ -229,7 +232,7 @@
 
 ;;; error
 
-(defstruct+ x-error ()
+(defstruct+ x-error (:export-all-p t)
   (code 0 :type card8)
   (sequence-number 0 :type card16)
   (bad-value 0 :type card32)
@@ -284,10 +287,13 @@
         (aligned-length (apply #'+ 4 length-list))
         `(aligned-length ,(compose-length length-list 4)))))
 
-(defstruct+ reply-collback ()
+(defstruct+ reply-collback (:export-all-p t)
   (major-opcode 0 :type card8)
   (minor-opcode nil :type (or null card16))
   (fn nil :type function))
+
+(export 'x-reply)
+(defstruct x-reply)
 
 (defmacro define-request (name code request-fields reply-fields)
   `(progn
@@ -316,7 +322,7 @@
         (let* ((str-name (intern-name name "~a-reply"))
                (reader-name (intern-name str-name "read-~a")))
           `(progn
-             (defstruct+ ,str-name ()
+             (defstruct+ ,str-name (:export-all-p t :include x-reply)
                ,@(fields->slots reply-fields))
              (defun ,reader-name (buffer offset length)
                (declare (ignorable length))

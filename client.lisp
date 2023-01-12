@@ -2,7 +2,7 @@
 
 (export '(client-open-p x-close flush))
 
-(defstruct+ client ()
+(defstruct+ client (:export-all-p t)
   (stream nil :type stream :read-only t)
   (server-information)
   (resource-id-base 0 :type (integer 0))
