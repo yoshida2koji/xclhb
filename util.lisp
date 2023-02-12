@@ -1,6 +1,7 @@
 (in-package :xclhb)
 
 (export '(with-connected-client wait-reply wait-event
+          card32->card8-vector intern-atom-sync
           keycode->keysym
           init-extension extension-info extension-event-base
           extension-error-base extension-major-opcode
@@ -45,6 +46,18 @@
             for pre-handler in pre-event-handlers
             do (setf (aref event-handlers code) pre-handler))
       event)))
+
+(defun card32->card8-vector (atom)
+  (let ((buf (make-buffer 4)))
+    (setf (aref buf 0) (ldb (cl:byte 8 24) atom))
+    (setf (aref buf 1) (ldb (cl:byte 8 16) atom))
+    (setf (aref buf 2) (ldb (cl:byte 8 8) atom))
+    (setf (aref buf 3) (ldb (cl:byte 8 0) atom))
+    buf))
+
+(defun intern-atom-sync (client atom-name)
+  (let ((name (string->card8-vector atom-name)))
+    (intern-atom-reply-atom (wait-reply client (lambda (cb) (intern-atom client cb 0 (length name) name))))))
 
 (defun set-keycode-keysym-table (client)
   (with-client (server-information keycode-keysym-table) client

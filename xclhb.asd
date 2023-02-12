@@ -1,8 +1,8 @@
 (defsystem "xclhb"
-  :version "0.1"
+  :version "0.2"
   :author "yoshida koji"
   :license "MIT"
-  :depends-on ("struct+")
+  :depends-on ((:version "struct+" "0.2"))
   :serial t
   :components ((:file "package")
                (:file "misc")
