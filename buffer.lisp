@@ -4,7 +4,8 @@
           read-card8 read-card16 read-card32
           read-int8 read-int16 read-int32
           write-card8 write-card16 write-card32
-          write-int8 write-int16 write-int32))
+          write-int8 write-int16 write-int32
+          string->card8-vector card8-vector->string))
 
 (define-inline make-offset (&optional (init 0))
   (make-array 1 :element-type '(integer 0) :initial-element init))
@@ -103,6 +104,10 @@
 
 (defun string->card8-vector (string)
   (map 'vector #'char-code string))
+
+(defun card8-vector->string (vec)
+  (coerce (map 'vector #'code-char vec) 'string))
+
 
 (defun write-string8 (buffer offset string)
   (dotimes (i (length string))

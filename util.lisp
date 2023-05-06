@@ -1,7 +1,9 @@
 (in-package :xclhb)
 
-(export '(with-connected-client wait-reply wait-event
-          card32->card8-vector intern-atom-sync
+(export '(with-connected-client  wait-event
+          card32->card8-vector card8-vector->card32-vector
+          card8-vector->card16-vector
+          intern-atom-sync get-property-sync
           keycode->keysym
           init-extension extension-info extension-event-base
           extension-error-base extension-major-opcode
@@ -16,23 +18,8 @@
             ,@body)
        (x-close ,client))))
 
-(defun wait-reply (client request-fn)
-  "request-fn is (lambda (cb) (some-request client cb ...))"
-  (let* ((reply)
-         (err)
-         (pre-error-handler (client-default-error-handler client))
-         (seq-no (funcall request-fn (lambda (r) (setf reply r)))))
-    (setf (client-default-error-handler client)
-          (lambda (e)
-            (when (= seq-no (x-error-sequence-number e))
-              (setf err e))))
-    (flush client)
-    (loop :until (or reply err)
-          :do (process-input-one client :wait-p t))
-    (setf (client-default-error-handler client) pre-error-handler)
-    (or reply err)))
-
-(defun wait-event (client &rest events-codes)
+(defun wait-event (client events-codes &key timeout-seconds)
+  (flush client)
   (when events-codes
     (let* ((event-handlers (client-event-handlers client))
            (pre-event-handlers (loop for code in events-codes
@@ -40,8 +27,16 @@
            (event))
       (loop for code in events-codes
             do (setf (aref event-handlers code) (lambda (e) (setf event e))))
-      (loop :until event
-            :do (process-input-one client :wait-p t))
+      (if (realp timeout-seconds)
+          (loop :with start-time = (/ (get-internal-real-time) internal-time-units-per-second)
+                :while (and (null event)
+                            (< (-  (/ (get-internal-real-time) internal-time-units-per-second)
+                                   start-time)
+                               timeout-seconds))
+                :do (loop :while (process-input-one client))
+                    (sleep 0.01))
+          (loop :until event
+                :do (process-input-one client :wait-p t)))
       (loop for code in events-codes
             for pre-handler in pre-event-handlers
             do (setf (aref event-handlers code) pre-handler))
@@ -55,9 +50,29 @@
     (setf (aref buf 3) (ldb (cl:byte 8 0) atom))
     buf))
 
-(defun intern-atom-sync (client atom-name)
-  (let ((name (string->card8-vector atom-name)))
-    (intern-atom-reply-atom (wait-reply client (lambda (cb) (intern-atom client cb 0 (length name) name))))))
+(defun card8-vector->card32-vector (vec)
+  (let ((ret (make-array (floor (length vec) 4) :element-type 'card32)))
+    (loop for i from 0 by 4
+          for j from 0 below (length ret)
+          do (setf (aref ret j) (read-card32 vec i)))
+    ret))
+
+(defun card8-vector->card16-vector (vec)
+  (let ((ret (make-array (floor (length vec) 2) :element-type 'card16)))
+    (loop for i from 0 by 2
+          for j from 0 below (length ret)
+          do (setf (aref ret j) (read-card16 vec i)))
+    ret))
+
+
+;; (defun intern-atom-sync (client atom-name)
+;;   (let ((name (string->card8-vector atom-name)))
+;;     (intern-atom-reply-atom (wait-reply client (lambda (cb) (intern-atom client cb 0 (length name) name))))))
+
+;; (defun get-property-sync (client window property
+;;                           &key (delete 0) (type 0) (long-offset 0) (long-length (1- (expt 2 32))))
+;;   (wait-reply client (lambda (cb)
+;;                        (get-property client cb delete window property type long-offset long-length))))
 
 (defun set-keycode-keysym-table (client)
   (with-client (server-information keycode-keysym-table) client

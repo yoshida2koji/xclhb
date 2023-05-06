@@ -292,42 +292,94 @@
   (minor-opcode nil :type (or null card16))
   (fn nil :type function))
 
+;; for sync request
+(export 'wait-reply)
+(defun wait-reply (client request-fn)
+  "request-fn is (lambda (cb) (some-request client cb ...))"
+  (let* ((reply)
+         (err)
+         (pre-error-handler (client-default-error-handler client))
+         (seq-no (funcall request-fn (lambda (r) (setf reply r)))))
+    (setf (client-default-error-handler client)
+          (lambda (e)
+            (when (= seq-no (x-error-sequence-number e))
+              (setf err e))))
+    (flush client)
+    (loop :until (or reply err)
+          :do (process-input-one client :wait-p t))
+    (setf (client-default-error-handler client) pre-error-handler)
+    (or reply err)))
+
 (export 'x-reply)
 (defstruct x-reply)
 
-(defmacro define-request (name code request-fields reply-fields)
-  `(progn
-     (export ',name)
-     ,(let ((write-length-form '(card16 (/ request-length 4))))
-        `(defun ,name ,(remove nil `(client ,(if reply-fields 'callback) ,@(request-args request-fields)))
-           (let* ((request-length ,(request-length request-fields))
-                  (buffer (if (> request-length (length (client-output-buffer client)))
-                              (make-buffer request-length)
-                              (client-output-buffer client)))
-                  (offset (make-offset 1)))
-             (declare (dynamic-extent offset)
-                      (ignorable offset))
-             (write-card8 buffer 0 ,code)
-             ,@(if request-fields
-                   (fields->write-forms (insert write-length-form request-fields 1))
-                   (fields->write-forms `((pad bytes 1) ,write-length-form)))
-             (write-sequence buffer (client-stream client) :end request-length)
-             (let ((seq-no (client-request-sequence-number client)))
-               ,(when reply-fields
-                  `(push (cons seq-no (make-reply-collback :major-opcode ,code :fn callback))
-                         (client-request-reply-callback-table client)))
-               (setf (client-request-sequence-number client) (+ seq-no 1))
-               seq-no))))
-     ,(when reply-fields
-        (let* ((str-name (intern-name name "~a-reply"))
-               (reader-name (intern-name str-name "read-~a")))
-          `(progn
-             (defstruct+ ,str-name (:export-all-p t :include x-reply)
-               ,@(fields->slots reply-fields))
-             (defun ,reader-name (buffer offset length)
-               (declare (ignorable length))
-               (let ((str (,(intern-name str-name "make-~a"))))
-                 (,(intern-name str-name "with-~a") ,(field-names reply-fields) str
-                  ,@(fields->read-forms (insert '(pad bytes 6) reply-fields 1)))
-                 str))
-             (setf (aref *read-reply-functions* ,code) #',reader-name))))))
+(defmacro define-request (name code request-fields reply-fields &key minor-opcode)
+  (let* ((rest-args (remove-if-not #'symbolp (request-args request-fields)))
+         (args (remove nil `(client ,(if reply-fields 'callback) ,@rest-args)))
+         (write-forms (fields->write-forms (cdr request-fields))))
+    `(progn
+       (export ',name)
+       (defun ,name ,args
+         (let* ((request-length ,(request-length request-fields))
+                (big-request-p (> request-length #.(* 4 #xffff)))
+                (actual-request-length (if big-request-p (+ 4 request-length) request-length))
+                (buffer (if (> actual-request-length (length (client-output-buffer client)))
+                            (make-buffer actual-request-length)
+                            (client-output-buffer client)))
+                (offset (make-offset (if big-request-p 8 4))))
+           (declare (dynamic-extent offset)
+                    (ignorable offset))
+           ;; major opcode
+           (write-card8 buffer 0 ,code)
+           ;; first field
+           ,(when (and request-fields (not (eql 'pad (caar request-fields))))
+              `(write-card8 buffer 1 ,(cadar request-fields)))
+           ;; request length
+           (cond (big-request-p
+                  (write-card16 buffer 2 0)
+                  (write-card32 buffer 4 (/ actual-request-length 4)))
+                 (t
+                  (write-card16 buffer 2 (/ actual-request-length 4))))
+           (print (list big-request-p actual-request-length (length buffer)))
+           ;; rest fields
+           ,@write-forms
+           ;; buffer to stream
+           (write-sequence buffer (client-stream client) :end actual-request-length)
+           (let ((seq-no (client-request-sequence-number client)))
+             ,(when reply-fields
+                `(push (cons seq-no (make-reply-collback :major-opcode ,code :minor-opcode ,minor-opcode :fn callback))
+                       (client-request-reply-callback-table client)))
+             (setf (client-request-sequence-number client) (+ seq-no 1))
+             seq-no)))
+       ,(when reply-fields
+          (let* ((sync-name (intern-name name "~a-sync"))
+                 (sync-args (remove 'callback args)))
+            `(progn
+               (export ',sync-name)
+               (defun ,sync-name ,sync-args
+                 (wait-reply client (lambda (cb)
+                                      (,name client cb ,@rest-args)))))))
+       ,(when reply-fields
+          (let* ((str-name (intern-name name "~a-reply"))
+                 (reader-name (intern-name str-name "read-~a"))
+                 (slots (fields->slots reply-fields))
+                 (make-str (intern-name str-name "make-~a"))
+                 (with-str (intern-name str-name "with-~a"))
+                 (field-names (field-names reply-fields))
+                 (read-forms (fields->read-forms (insert '(pad bytes 6) reply-fields 1))))
+            `(progn
+               (defstruct+ ,str-name (:export-all-p t :include x-reply) ,@slots)
+               (defun ,reader-name (buffer offset length)
+                 (declare (ignorable length))
+                 (let ((str (,make-str)))
+                   (,with-str ,field-names str
+                     ,@read-forms)
+                   str))
+               ,(unless minor-opcode
+                  `(setf (aref *read-reply-functions* ,code) #',reader-name))))))))
+
+(defmacro define-extension-request (name extension-name minor-opcode request-fields reply-fields)
+  `(define-request ,name (extension-major-opcode client ,extension-name)
+     ,(cons `(card8 ,minor-opcode) request-fields) ,reply-fields :minor-opcode ,minor-opcode))
+
+(export '(pad bytes define-extension-request))
