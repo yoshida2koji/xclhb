@@ -28,3 +28,7 @@
     (dolist (pos positions)
       (setf (ldb (cl:byte 1 pos) mask) 1))
     mask))
+
+(defun reexport (symbol package)
+  (import symbol package)
+  (export symbol package))
