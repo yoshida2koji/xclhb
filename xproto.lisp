@@ -1,1842 +1,2400 @@
-(IN-PACKAGE :XCLHB)
+(in-package :xclhb)
 
-(DEFINE-STRUCT CHAR2B ((CARD8 BYTE1) (CARD8 BYTE2)))
+(define-struct char2b ((card8 byte1) (card8 byte2)))
 
-(PROGN (EXPORT 'WINDOW) (DEFTYPE WINDOW () 'XID))
+(export 'window)
 
-(PROGN (EXPORT 'PIXMAP) (DEFTYPE PIXMAP () 'XID))
+(deftype window () 'xid)
 
-(PROGN (EXPORT 'CURSOR) (DEFTYPE CURSOR () 'XID))
+(export 'pixmap)
 
-(PROGN (EXPORT 'FONT) (DEFTYPE FONT () 'XID))
+(deftype pixmap () 'xid)
 
-(PROGN (EXPORT 'GCONTEXT) (DEFTYPE GCONTEXT () 'XID))
+(export 'cursor)
 
-(PROGN (EXPORT 'COLORMAP) (DEFTYPE COLORMAP () 'XID))
+(deftype cursor () 'xid)
 
-(PROGN (EXPORT 'ATOM) (DEFTYPE ATOM () 'XID))
+(export 'font)
 
-(PROGN (EXPORT 'DRAWABLE) (DEFTYPE DRAWABLE () '(OR WINDOW PIXMAP)))
+(deftype font () 'xid)
 
-(PROGN (EXPORT 'FONTABLE) (DEFTYPE FONTABLE () '(OR FONT GCONTEXT)))
+(export 'gcontext)
 
-(PROGN (EXPORT 'BOOL32) (DEFTYPE BOOL32 () 'CARD32))
+(deftype gcontext () 'xid)
 
-(PROGN (EXPORT 'VISUALID) (DEFTYPE VISUALID () 'CARD32))
+(export 'colormap)
 
-(PROGN (EXPORT 'TIMESTAMP) (DEFTYPE TIMESTAMP () 'CARD32))
+(deftype colormap () 'xid)
 
-(PROGN (EXPORT 'KEYSYM) (DEFTYPE KEYSYM () 'CARD32))
+(export 'atom)
 
-(PROGN (EXPORT 'KEYCODE) (DEFTYPE KEYCODE () 'CARD8))
+(deftype atom () 'xid)
 
-(PROGN (EXPORT 'KEYCODE32) (DEFTYPE KEYCODE32 () 'CARD32))
+(export 'drawable)
 
-(PROGN (EXPORT 'BUTTON) (DEFTYPE BUTTON () 'CARD8))
+(deftype drawable () '(or window pixmap))
 
-(DEFINE-STRUCT POINT ((INT16 X) (INT16 Y)))
+(export 'fontable)
 
-(DEFINE-STRUCT RECTANGLE ((INT16 X) (INT16 Y) (CARD16 WIDTH) (CARD16 HEIGHT)))
+(deftype fontable () '(or font gcontext))
 
-(DEFINE-STRUCT ARC
- ((INT16 X) (INT16 Y) (CARD16 WIDTH) (CARD16 HEIGHT) (INT16 ANGLE1)
-  (INT16 ANGLE2)))
+(export 'bool32)
 
-(DEFINE-STRUCT FORMAT
- ((CARD8 DEPTH) (CARD8 BITS-PER-PIXEL) (CARD8 SCANLINE-PAD) (PAD BYTES 5)))
+(deftype bool32 () 'card32)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--STATIC-GRAY+)
- (DEFCONSTANT +VISUAL-CLASS--STATIC-GRAY+ 0))
+(export 'visualid)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--GRAY-SCALE+)
- (DEFCONSTANT +VISUAL-CLASS--GRAY-SCALE+ 1))
+(deftype visualid () 'card32)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--STATIC-COLOR+)
- (DEFCONSTANT +VISUAL-CLASS--STATIC-COLOR+ 2))
+(export 'timestamp)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--PSEUDO-COLOR+)
- (DEFCONSTANT +VISUAL-CLASS--PSEUDO-COLOR+ 3))
+(deftype timestamp () 'card32)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--TRUE-COLOR+)
- (DEFCONSTANT +VISUAL-CLASS--TRUE-COLOR+ 4))
+(export 'keysym)
 
-(PROGN
- (EXPORT '+VISUAL-CLASS--DIRECT-COLOR+)
- (DEFCONSTANT +VISUAL-CLASS--DIRECT-COLOR+ 5))
+(deftype keysym () 'card32)
 
-(DEFINE-STRUCT VISUALTYPE
- ((VISUALID VISUAL-ID) (CARD8 CLASS) (CARD8 BITS-PER-RGB-VALUE)
-  (CARD16 COLORMAP-ENTRIES) (CARD32 RED-MASK) (CARD32 GREEN-MASK)
-  (CARD32 BLUE-MASK) (PAD BYTES 4)))
+(export 'keycode)
 
-(DEFINE-STRUCT DEPTH
- ((CARD8 DEPTH) (PAD BYTES 1) (CARD16 VISUALS-LEN) (PAD BYTES 4)
-  (LIST VISUALTYPE VISUALS-LEN VISUALS)))
+(deftype keycode () 'card8)
 
-(PROGN (EXPORT '+EVENT-MASK--NO-EVENT+) (DEFCONSTANT +EVENT-MASK--NO-EVENT+ 0))
+(export 'keycode32)
 
-(PROGN
- (EXPORT '+EVENT-MASK--KEY-PRESS+)
- (DEFCONSTANT +EVENT-MASK--KEY-PRESS+ 0))
+(deftype keycode32 () 'card32)
 
-(PROGN
- (EXPORT '+EVENT-MASK--KEY-RELEASE+)
- (DEFCONSTANT +EVENT-MASK--KEY-RELEASE+ 1))
+(export 'button)
 
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON-PRESS+)
- (DEFCONSTANT +EVENT-MASK--BUTTON-PRESS+ 2))
+(deftype button () 'card8)
 
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON-RELEASE+)
- (DEFCONSTANT +EVENT-MASK--BUTTON-RELEASE+ 3))
+(define-struct point ((int16 x) (int16 y)))
 
-(PROGN
- (EXPORT '+EVENT-MASK--ENTER-WINDOW+)
- (DEFCONSTANT +EVENT-MASK--ENTER-WINDOW+ 4))
-
-(PROGN
- (EXPORT '+EVENT-MASK--LEAVE-WINDOW+)
- (DEFCONSTANT +EVENT-MASK--LEAVE-WINDOW+ 5))
-
-(PROGN
- (EXPORT '+EVENT-MASK--POINTER-MOTION+)
- (DEFCONSTANT +EVENT-MASK--POINTER-MOTION+ 6))
-
-(PROGN
- (EXPORT '+EVENT-MASK--POINTER-MOTION-HINT+)
- (DEFCONSTANT +EVENT-MASK--POINTER-MOTION-HINT+ 7))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON1MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON1MOTION+ 8))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON2MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON2MOTION+ 9))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON3MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON3MOTION+ 10))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON4MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON4MOTION+ 11))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON5MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON5MOTION+ 12))
-
-(PROGN
- (EXPORT '+EVENT-MASK--BUTTON-MOTION+)
- (DEFCONSTANT +EVENT-MASK--BUTTON-MOTION+ 13))
-
-(PROGN
- (EXPORT '+EVENT-MASK--KEYMAP-STATE+)
- (DEFCONSTANT +EVENT-MASK--KEYMAP-STATE+ 14))
-
-(PROGN (EXPORT '+EVENT-MASK--EXPOSURE+) (DEFCONSTANT +EVENT-MASK--EXPOSURE+ 15))
-
-(PROGN
- (EXPORT '+EVENT-MASK--VISIBILITY-CHANGE+)
- (DEFCONSTANT +EVENT-MASK--VISIBILITY-CHANGE+ 16))
-
-(PROGN
- (EXPORT '+EVENT-MASK--STRUCTURE-NOTIFY+)
- (DEFCONSTANT +EVENT-MASK--STRUCTURE-NOTIFY+ 17))
-
-(PROGN
- (EXPORT '+EVENT-MASK--RESIZE-REDIRECT+)
- (DEFCONSTANT +EVENT-MASK--RESIZE-REDIRECT+ 18))
+(define-struct rectangle ((int16 x) (int16 y) (card16 width) (card16 height)))
 
-(PROGN
- (EXPORT '+EVENT-MASK--SUBSTRUCTURE-NOTIFY+)
- (DEFCONSTANT +EVENT-MASK--SUBSTRUCTURE-NOTIFY+ 19))
+(define-struct arc
+ ((int16 x) (int16 y) (card16 width) (card16 height) (int16 angle1)
+  (int16 angle2)))
 
-(PROGN
- (EXPORT '+EVENT-MASK--SUBSTRUCTURE-REDIRECT+)
- (DEFCONSTANT +EVENT-MASK--SUBSTRUCTURE-REDIRECT+ 20))
+(define-struct format
+ ((card8 depth) (card8 bits-per-pixel) (card8 scanline-pad) (pad bytes 5)))
 
-(PROGN
- (EXPORT '+EVENT-MASK--FOCUS-CHANGE+)
- (DEFCONSTANT +EVENT-MASK--FOCUS-CHANGE+ 21))
+(export '+visual-class--static-gray+)
 
-(PROGN
- (EXPORT '+EVENT-MASK--PROPERTY-CHANGE+)
- (DEFCONSTANT +EVENT-MASK--PROPERTY-CHANGE+ 22))
+(defconstant +visual-class--static-gray+ 0)
 
-(PROGN
- (EXPORT '+EVENT-MASK--COLOR-MAP-CHANGE+)
- (DEFCONSTANT +EVENT-MASK--COLOR-MAP-CHANGE+ 23))
+(export '+visual-class--gray-scale+)
 
-(PROGN
- (EXPORT '+EVENT-MASK--OWNER-GRAB-BUTTON+)
- (DEFCONSTANT +EVENT-MASK--OWNER-GRAB-BUTTON+ 24))
+(defconstant +visual-class--gray-scale+ 1)
 
-(PROGN
- (EXPORT '+BACKING-STORE--NOT-USEFUL+)
- (DEFCONSTANT +BACKING-STORE--NOT-USEFUL+ 0))
+(export '+visual-class--static-color+)
 
-(PROGN
- (EXPORT '+BACKING-STORE--WHEN-MAPPED+)
- (DEFCONSTANT +BACKING-STORE--WHEN-MAPPED+ 1))
+(defconstant +visual-class--static-color+ 2)
 
-(PROGN
- (EXPORT '+BACKING-STORE--ALWAYS+)
- (DEFCONSTANT +BACKING-STORE--ALWAYS+ 2))
+(export '+visual-class--pseudo-color+)
 
-(DEFINE-STRUCT SCREEN
- ((WINDOW ROOT) (COLORMAP DEFAULT-COLORMAP) (CARD32 WHITE-PIXEL)
-  (CARD32 BLACK-PIXEL) (CARD32 CURRENT-INPUT-MASKS) (CARD16 WIDTH-IN-PIXELS)
-  (CARD16 HEIGHT-IN-PIXELS) (CARD16 WIDTH-IN-MILLIMETERS)
-  (CARD16 HEIGHT-IN-MILLIMETERS) (CARD16 MIN-INSTALLED-MAPS)
-  (CARD16 MAX-INSTALLED-MAPS) (VISUALID ROOT-VISUAL) (BYTE BACKING-STORES)
-  (BOOL SAVE-UNDERS) (CARD8 ROOT-DEPTH) (CARD8 ALLOWED-DEPTHS-LEN)
-  (LIST DEPTH ALLOWED-DEPTHS-LEN ALLOWED-DEPTHS)))
+(defconstant +visual-class--pseudo-color+ 3)
 
-(DEFINE-STRUCT SETUP-REQUEST
- ((CARD8 BYTE-ORDER) (PAD BYTES 1) (CARD16 PROTOCOL-MAJOR-VERSION)
-  (CARD16 PROTOCOL-MINOR-VERSION) (CARD16 AUTHORIZATION-PROTOCOL-NAME-LEN)
-  (CARD16 AUTHORIZATION-PROTOCOL-DATA-LEN) (PAD BYTES 2)
-  (LIST CHAR AUTHORIZATION-PROTOCOL-NAME-LEN AUTHORIZATION-PROTOCOL-NAME)
-  (PAD ALIGN 4)
-  (LIST CHAR AUTHORIZATION-PROTOCOL-DATA-LEN AUTHORIZATION-PROTOCOL-DATA)
-  (PAD ALIGN 4)))
+(export '+visual-class--true-color+)
 
-(DEFINE-STRUCT SETUP-FAILED
- ((CARD8 STATUS) (CARD8 REASON-LEN) (CARD16 PROTOCOL-MAJOR-VERSION)
-  (CARD16 PROTOCOL-MINOR-VERSION) (CARD16 LENGTH)
-  (LIST CHAR REASON-LEN REASON)))
+(defconstant +visual-class--true-color+ 4)
 
-(DEFINE-STRUCT SETUP-AUTHENTICATE
- ((CARD8 STATUS) (PAD BYTES 5) (CARD16 LENGTH) (LIST CHAR (* LENGTH 4) REASON)))
+(export '+visual-class--direct-color+)
 
-(PROGN
- (EXPORT '+IMAGE-ORDER--LSBFIRST+)
- (DEFCONSTANT +IMAGE-ORDER--LSBFIRST+ 0))
+(defconstant +visual-class--direct-color+ 5)
 
-(PROGN
- (EXPORT '+IMAGE-ORDER--MSBFIRST+)
- (DEFCONSTANT +IMAGE-ORDER--MSBFIRST+ 1))
+(define-struct visualtype
+ ((visualid visual-id) (card8 class) (card8 bits-per-rgb-value)
+  (card16 colormap-entries) (card32 red-mask) (card32 green-mask)
+  (card32 blue-mask) (pad bytes 4)))
 
-(DEFINE-STRUCT SETUP
- ((CARD8 STATUS) (PAD BYTES 1) (CARD16 PROTOCOL-MAJOR-VERSION)
-  (CARD16 PROTOCOL-MINOR-VERSION) (CARD16 LENGTH) (CARD32 RELEASE-NUMBER)
-  (CARD32 RESOURCE-ID-BASE) (CARD32 RESOURCE-ID-MASK)
-  (CARD32 MOTION-BUFFER-SIZE) (CARD16 VENDOR-LEN)
-  (CARD16 MAXIMUM-REQUEST-LENGTH) (CARD8 ROOTS-LEN) (CARD8 PIXMAP-FORMATS-LEN)
-  (CARD8 IMAGE-BYTE-ORDER) (CARD8 BITMAP-FORMAT-BIT-ORDER)
-  (CARD8 BITMAP-FORMAT-SCANLINE-UNIT) (CARD8 BITMAP-FORMAT-SCANLINE-PAD)
-  (KEYCODE MIN-KEYCODE) (KEYCODE MAX-KEYCODE) (PAD BYTES 4)
-  (LIST CHAR VENDOR-LEN VENDOR) (PAD ALIGN 4)
-  (LIST FORMAT PIXMAP-FORMATS-LEN PIXMAP-FORMATS)
-  (LIST SCREEN ROOTS-LEN ROOTS)))
+(define-struct depth
+ ((card8 depth) (pad bytes 1) (card16 visuals-len) (pad bytes 4)
+  (list visualtype visuals-len visuals)))
 
-(PROGN (EXPORT '+MOD-MASK--SHIFT+) (DEFCONSTANT +MOD-MASK--SHIFT+ 0))
+(export '+event-mask--no-event+)
 
-(PROGN (EXPORT '+MOD-MASK--LOCK+) (DEFCONSTANT +MOD-MASK--LOCK+ 1))
+(defconstant +event-mask--no-event+ 0)
 
-(PROGN (EXPORT '+MOD-MASK--CONTROL+) (DEFCONSTANT +MOD-MASK--CONTROL+ 2))
+(export '+event-mask--key-press+)
 
-(PROGN (EXPORT '+MOD-MASK--1+) (DEFCONSTANT +MOD-MASK--1+ 3))
+(defconstant +event-mask--key-press+ 0)
 
-(PROGN (EXPORT '+MOD-MASK--2+) (DEFCONSTANT +MOD-MASK--2+ 4))
+(export '+event-mask--key-release+)
 
-(PROGN (EXPORT '+MOD-MASK--3+) (DEFCONSTANT +MOD-MASK--3+ 5))
+(defconstant +event-mask--key-release+ 1)
 
-(PROGN (EXPORT '+MOD-MASK--4+) (DEFCONSTANT +MOD-MASK--4+ 6))
+(export '+event-mask--button-press+)
 
-(PROGN (EXPORT '+MOD-MASK--5+) (DEFCONSTANT +MOD-MASK--5+ 7))
+(defconstant +event-mask--button-press+ 2)
 
-(PROGN (EXPORT '+MOD-MASK--ANY+) (DEFCONSTANT +MOD-MASK--ANY+ 15))
+(export '+event-mask--button-release+)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--SHIFT+) (DEFCONSTANT +KEY-BUT-MASK--SHIFT+ 0))
+(defconstant +event-mask--button-release+ 3)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--LOCK+) (DEFCONSTANT +KEY-BUT-MASK--LOCK+ 1))
+(export '+event-mask--enter-window+)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--CONTROL+)
- (DEFCONSTANT +KEY-BUT-MASK--CONTROL+ 2))
+(defconstant +event-mask--enter-window+ 4)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--MOD1+) (DEFCONSTANT +KEY-BUT-MASK--MOD1+ 3))
+(export '+event-mask--leave-window+)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--MOD2+) (DEFCONSTANT +KEY-BUT-MASK--MOD2+ 4))
+(defconstant +event-mask--leave-window+ 5)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--MOD3+) (DEFCONSTANT +KEY-BUT-MASK--MOD3+ 5))
+(export '+event-mask--pointer-motion+)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--MOD4+) (DEFCONSTANT +KEY-BUT-MASK--MOD4+ 6))
+(defconstant +event-mask--pointer-motion+ 6)
 
-(PROGN (EXPORT '+KEY-BUT-MASK--MOD5+) (DEFCONSTANT +KEY-BUT-MASK--MOD5+ 7))
+(export '+event-mask--pointer-motion-hint+)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--BUTTON1+)
- (DEFCONSTANT +KEY-BUT-MASK--BUTTON1+ 8))
+(defconstant +event-mask--pointer-motion-hint+ 7)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--BUTTON2+)
- (DEFCONSTANT +KEY-BUT-MASK--BUTTON2+ 9))
+(export '+event-mask--button1motion+)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--BUTTON3+)
- (DEFCONSTANT +KEY-BUT-MASK--BUTTON3+ 10))
+(defconstant +event-mask--button1motion+ 8)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--BUTTON4+)
- (DEFCONSTANT +KEY-BUT-MASK--BUTTON4+ 11))
+(export '+event-mask--button2motion+)
 
-(PROGN
- (EXPORT '+KEY-BUT-MASK--BUTTON5+)
- (DEFCONSTANT +KEY-BUT-MASK--BUTTON5+ 12))
+(defconstant +event-mask--button2motion+ 9)
 
-(PROGN (EXPORT '+WINDOW--NONE+) (DEFCONSTANT +WINDOW--NONE+ 0))
+(export '+event-mask--button3motion+)
 
-(DEFINE-EVENT KEY-PRESS 2
- ((KEYCODE DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BOOL SAME-SCREEN) (PAD BYTES 1)))
+(defconstant +event-mask--button3motion+ 10)
 
-(DEFINE-EVENT KEY-RELEASE 3
- ((KEYCODE DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BOOL SAME-SCREEN) (PAD BYTES 1)))
+(export '+event-mask--button4motion+)
 
-(PROGN (EXPORT '+BUTTON-MASK--1+) (DEFCONSTANT +BUTTON-MASK--1+ 8))
+(defconstant +event-mask--button4motion+ 11)
 
-(PROGN (EXPORT '+BUTTON-MASK--2+) (DEFCONSTANT +BUTTON-MASK--2+ 9))
+(export '+event-mask--button5motion+)
 
-(PROGN (EXPORT '+BUTTON-MASK--3+) (DEFCONSTANT +BUTTON-MASK--3+ 10))
+(defconstant +event-mask--button5motion+ 12)
 
-(PROGN (EXPORT '+BUTTON-MASK--4+) (DEFCONSTANT +BUTTON-MASK--4+ 11))
+(export '+event-mask--button-motion+)
 
-(PROGN (EXPORT '+BUTTON-MASK--5+) (DEFCONSTANT +BUTTON-MASK--5+ 12))
+(defconstant +event-mask--button-motion+ 13)
 
-(PROGN (EXPORT '+BUTTON-MASK--ANY+) (DEFCONSTANT +BUTTON-MASK--ANY+ 15))
+(export '+event-mask--keymap-state+)
 
-(DEFINE-EVENT BUTTON-PRESS 4
- ((BUTTON DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BOOL SAME-SCREEN) (PAD BYTES 1)))
+(defconstant +event-mask--keymap-state+ 14)
 
-(DEFINE-EVENT BUTTON-RELEASE 5
- ((BUTTON DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BOOL SAME-SCREEN) (PAD BYTES 1)))
+(export '+event-mask--exposure+)
 
-(PROGN (EXPORT '+MOTION--NORMAL+) (DEFCONSTANT +MOTION--NORMAL+ 0))
+(defconstant +event-mask--exposure+ 15)
 
-(PROGN (EXPORT '+MOTION--HINT+) (DEFCONSTANT +MOTION--HINT+ 1))
+(export '+event-mask--visibility-change+)
 
-(DEFINE-EVENT MOTION-NOTIFY 6
- ((BYTE DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BOOL SAME-SCREEN) (PAD BYTES 1)))
+(defconstant +event-mask--visibility-change+ 16)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--ANCESTOR+)
- (DEFCONSTANT +NOTIFY-DETAIL--ANCESTOR+ 0))
+(export '+event-mask--structure-notify+)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--VIRTUAL+)
- (DEFCONSTANT +NOTIFY-DETAIL--VIRTUAL+ 1))
+(defconstant +event-mask--structure-notify+ 17)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--INFERIOR+)
- (DEFCONSTANT +NOTIFY-DETAIL--INFERIOR+ 2))
+(export '+event-mask--resize-redirect+)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--NONLINEAR+)
- (DEFCONSTANT +NOTIFY-DETAIL--NONLINEAR+ 3))
+(defconstant +event-mask--resize-redirect+ 18)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--NONLINEAR-VIRTUAL+)
- (DEFCONSTANT +NOTIFY-DETAIL--NONLINEAR-VIRTUAL+ 4))
+(export '+event-mask--substructure-notify+)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--POINTER+)
- (DEFCONSTANT +NOTIFY-DETAIL--POINTER+ 5))
+(defconstant +event-mask--substructure-notify+ 19)
 
-(PROGN
- (EXPORT '+NOTIFY-DETAIL--POINTER-ROOT+)
- (DEFCONSTANT +NOTIFY-DETAIL--POINTER-ROOT+ 6))
+(export '+event-mask--substructure-redirect+)
 
-(PROGN (EXPORT '+NOTIFY-DETAIL--NONE+) (DEFCONSTANT +NOTIFY-DETAIL--NONE+ 7))
+(defconstant +event-mask--substructure-redirect+ 20)
 
-(PROGN (EXPORT '+NOTIFY-MODE--NORMAL+) (DEFCONSTANT +NOTIFY-MODE--NORMAL+ 0))
+(export '+event-mask--focus-change+)
 
-(PROGN (EXPORT '+NOTIFY-MODE--GRAB+) (DEFCONSTANT +NOTIFY-MODE--GRAB+ 1))
+(defconstant +event-mask--focus-change+ 21)
 
-(PROGN (EXPORT '+NOTIFY-MODE--UNGRAB+) (DEFCONSTANT +NOTIFY-MODE--UNGRAB+ 2))
+(export '+event-mask--property-change+)
 
-(PROGN
- (EXPORT '+NOTIFY-MODE--WHILE-GRABBED+)
- (DEFCONSTANT +NOTIFY-MODE--WHILE-GRABBED+ 3))
+(defconstant +event-mask--property-change+ 22)
 
-(DEFINE-EVENT ENTER-NOTIFY 7
- ((BYTE DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BYTE MODE) (BYTE SAME-SCREEN-FOCUS)))
+(export '+event-mask--color-map-change+)
 
-(DEFINE-EVENT LEAVE-NOTIFY 8
- ((BYTE DETAIL) (TIMESTAMP TIME) (WINDOW ROOT) (WINDOW EVENT) (WINDOW CHILD)
-  (INT16 ROOT-X) (INT16 ROOT-Y) (INT16 EVENT-X) (INT16 EVENT-Y) (CARD16 STATE)
-  (BYTE MODE) (BYTE SAME-SCREEN-FOCUS)))
+(defconstant +event-mask--color-map-change+ 23)
 
-(DEFINE-EVENT FOCUS-IN 9
- ((BYTE DETAIL) (WINDOW EVENT) (BYTE MODE) (PAD BYTES 3)))
+(export '+event-mask--owner-grab-button+)
 
-(DEFINE-EVENT FOCUS-OUT 10
- ((BYTE DETAIL) (WINDOW EVENT) (BYTE MODE) (PAD BYTES 3)))
+(defconstant +event-mask--owner-grab-button+ 24)
 
-(DEFINE-EVENT KEYMAP-NOTIFY 11 ((LIST CARD8 31 KEYS)))
+(export '+backing-store--not-useful+)
 
-(DEFINE-EVENT EXPOSE 12
- ((PAD BYTES 1) (WINDOW WINDOW) (CARD16 X) (CARD16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD16 COUNT) (PAD BYTES 2)))
+(defconstant +backing-store--not-useful+ 0)
 
-(DEFINE-EVENT GRAPHICS-EXPOSURE 13
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (CARD16 X) (CARD16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD16 MINOR-OPCODE) (CARD16 COUNT) (CARD8 MAJOR-OPCODE)
-  (PAD BYTES 3)))
+(export '+backing-store--when-mapped+)
 
-(DEFINE-EVENT NO-EXPOSURE 14
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (CARD16 MINOR-OPCODE) (CARD8 MAJOR-OPCODE)
-  (PAD BYTES 1)))
+(defconstant +backing-store--when-mapped+ 1)
 
-(PROGN
- (EXPORT '+VISIBILITY--UNOBSCURED+)
- (DEFCONSTANT +VISIBILITY--UNOBSCURED+ 0))
+(export '+backing-store--always+)
 
-(PROGN
- (EXPORT '+VISIBILITY--PARTIALLY-OBSCURED+)
- (DEFCONSTANT +VISIBILITY--PARTIALLY-OBSCURED+ 1))
+(defconstant +backing-store--always+ 2)
 
-(PROGN
- (EXPORT '+VISIBILITY--FULLY-OBSCURED+)
- (DEFCONSTANT +VISIBILITY--FULLY-OBSCURED+ 2))
+(define-struct screen
+ ((window root) (colormap default-colormap) (card32 white-pixel)
+  (card32 black-pixel) (card32 current-input-masks) (card16 width-in-pixels)
+  (card16 height-in-pixels) (card16 width-in-millimeters)
+  (card16 height-in-millimeters) (card16 min-installed-maps)
+  (card16 max-installed-maps) (visualid root-visual) (byte backing-stores)
+  (bool save-unders) (card8 root-depth) (card8 allowed-depths-len)
+  (list depth allowed-depths-len allowed-depths)))
 
-(DEFINE-EVENT VISIBILITY-NOTIFY 15
- ((PAD BYTES 1) (WINDOW WINDOW) (BYTE STATE) (PAD BYTES 3)))
+(define-struct setup-request
+ ((card8 byte-order) (pad bytes 1) (card16 protocol-major-version)
+  (card16 protocol-minor-version) (card16 authorization-protocol-name-len)
+  (card16 authorization-protocol-data-len) (pad bytes 2)
+  (list char authorization-protocol-name-len authorization-protocol-name)
+  (pad align 4)
+  (list char authorization-protocol-data-len authorization-protocol-data)
+  (pad align 4)))
 
-(DEFINE-EVENT CREATE-NOTIFY 16
- ((PAD BYTES 1) (WINDOW PARENT) (WINDOW WINDOW) (INT16 X) (INT16 Y)
-  (CARD16 WIDTH) (CARD16 HEIGHT) (CARD16 BORDER-WIDTH) (BOOL OVERRIDE-REDIRECT)
-  (PAD BYTES 1)))
+(define-struct setup-failed
+ ((card8 status) (card8 reason-len) (card16 protocol-major-version)
+  (card16 protocol-minor-version) (card16 length)
+  (list char reason-len reason)))
 
-(DEFINE-EVENT DESTROY-NOTIFY 17 ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW)))
+(define-struct setup-authenticate
+ ((card8 status) (pad bytes 5) (card16 length) (list char (* length 4) reason)))
 
-(DEFINE-EVENT UNMAP-NOTIFY 18
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (BOOL FROM-CONFIGURE)
-  (PAD BYTES 3)))
+(export '+image-order--lsbfirst+)
 
-(DEFINE-EVENT MAP-NOTIFY 19
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (BOOL OVERRIDE-REDIRECT)
-  (PAD BYTES 3)))
+(defconstant +image-order--lsbfirst+ 0)
 
-(DEFINE-EVENT MAP-REQUEST 20 ((PAD BYTES 1) (WINDOW PARENT) (WINDOW WINDOW)))
+(export '+image-order--msbfirst+)
 
-(DEFINE-EVENT REPARENT-NOTIFY 21
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (WINDOW PARENT) (INT16 X)
-  (INT16 Y) (BOOL OVERRIDE-REDIRECT) (PAD BYTES 3)))
+(defconstant +image-order--msbfirst+ 1)
 
-(DEFINE-EVENT CONFIGURE-NOTIFY 22
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (WINDOW ABOVE-SIBLING) (INT16 X)
-  (INT16 Y) (CARD16 WIDTH) (CARD16 HEIGHT) (CARD16 BORDER-WIDTH)
-  (BOOL OVERRIDE-REDIRECT) (PAD BYTES 1)))
+(define-struct setup
+ ((card8 status) (pad bytes 1) (card16 protocol-major-version)
+  (card16 protocol-minor-version) (card16 length) (card32 release-number)
+  (card32 resource-id-base) (card32 resource-id-mask)
+  (card32 motion-buffer-size) (card16 vendor-len)
+  (card16 maximum-request-length) (card8 roots-len) (card8 pixmap-formats-len)
+  (card8 image-byte-order) (card8 bitmap-format-bit-order)
+  (card8 bitmap-format-scanline-unit) (card8 bitmap-format-scanline-pad)
+  (keycode min-keycode) (keycode max-keycode) (pad bytes 4)
+  (list char vendor-len vendor) (pad align 4)
+  (list format pixmap-formats-len pixmap-formats)
+  (list screen roots-len roots)))
 
-(DEFINE-EVENT CONFIGURE-REQUEST 23
- ((BYTE STACK-MODE) (WINDOW PARENT) (WINDOW WINDOW) (WINDOW SIBLING) (INT16 X)
-  (INT16 Y) (CARD16 WIDTH) (CARD16 HEIGHT) (CARD16 BORDER-WIDTH)
-  (CARD16 VALUE-MASK)))
+(export '+mod-mask--shift+)
 
-(DEFINE-EVENT GRAVITY-NOTIFY 24
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (INT16 X) (INT16 Y)))
+(defconstant +mod-mask--shift+ 0)
 
-(DEFINE-EVENT RESIZE-REQUEST 25
- ((PAD BYTES 1) (WINDOW WINDOW) (CARD16 WIDTH) (CARD16 HEIGHT)))
+(export '+mod-mask--lock+)
 
-(PROGN (EXPORT '+PLACE--ON-TOP+) (DEFCONSTANT +PLACE--ON-TOP+ 0))
+(defconstant +mod-mask--lock+ 1)
 
-(PROGN (EXPORT '+PLACE--ON-BOTTOM+) (DEFCONSTANT +PLACE--ON-BOTTOM+ 1))
+(export '+mod-mask--control+)
 
-(DEFINE-EVENT CIRCULATE-NOTIFY 26
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (PAD BYTES 4) (BYTE PLACE)
-  (PAD BYTES 3)))
+(defconstant +mod-mask--control+ 2)
 
-(DEFINE-EVENT CIRCULATE-REQUEST 27
- ((PAD BYTES 1) (WINDOW EVENT) (WINDOW WINDOW) (PAD BYTES 4) (BYTE PLACE)
-  (PAD BYTES 3)))
+(export '+mod-mask--1+)
 
-(PROGN (EXPORT '+PROPERTY--NEW-VALUE+) (DEFCONSTANT +PROPERTY--NEW-VALUE+ 0))
+(defconstant +mod-mask--1+ 3)
 
-(PROGN (EXPORT '+PROPERTY--DELETE+) (DEFCONSTANT +PROPERTY--DELETE+ 1))
+(export '+mod-mask--2+)
 
-(DEFINE-EVENT PROPERTY-NOTIFY 28
- ((PAD BYTES 1) (WINDOW WINDOW) (ATOM ATOM) (TIMESTAMP TIME) (BYTE STATE)
-  (PAD BYTES 3)))
+(defconstant +mod-mask--2+ 4)
 
-(DEFINE-EVENT SELECTION-CLEAR 29
- ((PAD BYTES 1) (TIMESTAMP TIME) (WINDOW OWNER) (ATOM SELECTION)))
+(export '+mod-mask--3+)
 
-(PROGN (EXPORT '+TIME--CURRENT-TIME+) (DEFCONSTANT +TIME--CURRENT-TIME+ 0))
+(defconstant +mod-mask--3+ 5)
 
-(PROGN (EXPORT '+ATOM--NONE+) (DEFCONSTANT +ATOM--NONE+ 0))
+(export '+mod-mask--4+)
 
-(PROGN (EXPORT '+ATOM--ANY+) (DEFCONSTANT +ATOM--ANY+ 0))
+(defconstant +mod-mask--4+ 6)
 
-(PROGN (EXPORT '+ATOM--PRIMARY+) (DEFCONSTANT +ATOM--PRIMARY+ 1))
+(export '+mod-mask--5+)
 
-(PROGN (EXPORT '+ATOM--SECONDARY+) (DEFCONSTANT +ATOM--SECONDARY+ 2))
+(defconstant +mod-mask--5+ 7)
 
-(PROGN (EXPORT '+ATOM--ARC+) (DEFCONSTANT +ATOM--ARC+ 3))
+(export '+mod-mask--any+)
 
-(PROGN (EXPORT '+ATOM--ATOM+) (DEFCONSTANT +ATOM--ATOM+ 4))
+(defconstant +mod-mask--any+ 15)
 
-(PROGN (EXPORT '+ATOM--BITMAP+) (DEFCONSTANT +ATOM--BITMAP+ 5))
+(export '+key-but-mask--shift+)
 
-(PROGN (EXPORT '+ATOM--CARDINAL+) (DEFCONSTANT +ATOM--CARDINAL+ 6))
+(defconstant +key-but-mask--shift+ 0)
 
-(PROGN (EXPORT '+ATOM--COLORMAP+) (DEFCONSTANT +ATOM--COLORMAP+ 7))
+(export '+key-but-mask--lock+)
 
-(PROGN (EXPORT '+ATOM--CURSOR+) (DEFCONSTANT +ATOM--CURSOR+ 8))
+(defconstant +key-but-mask--lock+ 1)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER0+) (DEFCONSTANT +ATOM--CUT-BUFFER0+ 9))
+(export '+key-but-mask--control+)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER1+) (DEFCONSTANT +ATOM--CUT-BUFFER1+ 10))
+(defconstant +key-but-mask--control+ 2)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER2+) (DEFCONSTANT +ATOM--CUT-BUFFER2+ 11))
+(export '+key-but-mask--mod1+)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER3+) (DEFCONSTANT +ATOM--CUT-BUFFER3+ 12))
+(defconstant +key-but-mask--mod1+ 3)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER4+) (DEFCONSTANT +ATOM--CUT-BUFFER4+ 13))
+(export '+key-but-mask--mod2+)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER5+) (DEFCONSTANT +ATOM--CUT-BUFFER5+ 14))
+(defconstant +key-but-mask--mod2+ 4)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER6+) (DEFCONSTANT +ATOM--CUT-BUFFER6+ 15))
+(export '+key-but-mask--mod3+)
 
-(PROGN (EXPORT '+ATOM--CUT-BUFFER7+) (DEFCONSTANT +ATOM--CUT-BUFFER7+ 16))
+(defconstant +key-but-mask--mod3+ 5)
 
-(PROGN (EXPORT '+ATOM--DRAWABLE+) (DEFCONSTANT +ATOM--DRAWABLE+ 17))
+(export '+key-but-mask--mod4+)
 
-(PROGN (EXPORT '+ATOM--FONT+) (DEFCONSTANT +ATOM--FONT+ 18))
+(defconstant +key-but-mask--mod4+ 6)
 
-(PROGN (EXPORT '+ATOM--INTEGER+) (DEFCONSTANT +ATOM--INTEGER+ 19))
+(export '+key-but-mask--mod5+)
 
-(PROGN (EXPORT '+ATOM--PIXMAP+) (DEFCONSTANT +ATOM--PIXMAP+ 20))
+(defconstant +key-but-mask--mod5+ 7)
 
-(PROGN (EXPORT '+ATOM--POINT+) (DEFCONSTANT +ATOM--POINT+ 21))
+(export '+key-but-mask--button1+)
 
-(PROGN (EXPORT '+ATOM--RECTANGLE+) (DEFCONSTANT +ATOM--RECTANGLE+ 22))
+(defconstant +key-but-mask--button1+ 8)
 
-(PROGN
- (EXPORT '+ATOM--RESOURCE-MANAGER+)
- (DEFCONSTANT +ATOM--RESOURCE-MANAGER+ 23))
+(export '+key-but-mask--button2+)
 
-(PROGN (EXPORT '+ATOM--RGB-COLOR-MAP+) (DEFCONSTANT +ATOM--RGB-COLOR-MAP+ 24))
+(defconstant +key-but-mask--button2+ 9)
 
-(PROGN (EXPORT '+ATOM--RGB-BEST-MAP+) (DEFCONSTANT +ATOM--RGB-BEST-MAP+ 25))
+(export '+key-but-mask--button3+)
 
-(PROGN (EXPORT '+ATOM--RGB-BLUE-MAP+) (DEFCONSTANT +ATOM--RGB-BLUE-MAP+ 26))
+(defconstant +key-but-mask--button3+ 10)
 
-(PROGN
- (EXPORT '+ATOM--RGB-DEFAULT-MAP+)
- (DEFCONSTANT +ATOM--RGB-DEFAULT-MAP+ 27))
+(export '+key-but-mask--button4+)
 
-(PROGN (EXPORT '+ATOM--RGB-GRAY-MAP+) (DEFCONSTANT +ATOM--RGB-GRAY-MAP+ 28))
+(defconstant +key-but-mask--button4+ 11)
 
-(PROGN (EXPORT '+ATOM--RGB-GREEN-MAP+) (DEFCONSTANT +ATOM--RGB-GREEN-MAP+ 29))
+(export '+key-but-mask--button5+)
 
-(PROGN (EXPORT '+ATOM--RGB-RED-MAP+) (DEFCONSTANT +ATOM--RGB-RED-MAP+ 30))
+(defconstant +key-but-mask--button5+ 12)
 
-(PROGN (EXPORT '+ATOM--STRING+) (DEFCONSTANT +ATOM--STRING+ 31))
+(export '+window--none+)
 
-(PROGN (EXPORT '+ATOM--VISUALID+) (DEFCONSTANT +ATOM--VISUALID+ 32))
+(defconstant +window--none+ 0)
 
-(PROGN (EXPORT '+ATOM--WINDOW+) (DEFCONSTANT +ATOM--WINDOW+ 33))
+(define-event key-press 2
+ ((keycode detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (bool same-screen) (pad bytes 1)))
 
-(PROGN (EXPORT '+ATOM--WM-COMMAND+) (DEFCONSTANT +ATOM--WM-COMMAND+ 34))
+(define-event key-release 3
+ ((keycode detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (bool same-screen) (pad bytes 1)))
 
-(PROGN (EXPORT '+ATOM--WM-HINTS+) (DEFCONSTANT +ATOM--WM-HINTS+ 35))
+(export '+button-mask--1+)
 
-(PROGN
- (EXPORT '+ATOM--WM-CLIENT-MACHINE+)
- (DEFCONSTANT +ATOM--WM-CLIENT-MACHINE+ 36))
+(defconstant +button-mask--1+ 8)
 
-(PROGN (EXPORT '+ATOM--WM-ICON-NAME+) (DEFCONSTANT +ATOM--WM-ICON-NAME+ 37))
+(export '+button-mask--2+)
 
-(PROGN (EXPORT '+ATOM--WM-ICON-SIZE+) (DEFCONSTANT +ATOM--WM-ICON-SIZE+ 38))
+(defconstant +button-mask--2+ 9)
 
-(PROGN (EXPORT '+ATOM--WM-NAME+) (DEFCONSTANT +ATOM--WM-NAME+ 39))
+(export '+button-mask--3+)
 
-(PROGN
- (EXPORT '+ATOM--WM-NORMAL-HINTS+)
- (DEFCONSTANT +ATOM--WM-NORMAL-HINTS+ 40))
+(defconstant +button-mask--3+ 10)
 
-(PROGN (EXPORT '+ATOM--WM-SIZE-HINTS+) (DEFCONSTANT +ATOM--WM-SIZE-HINTS+ 41))
+(export '+button-mask--4+)
 
-(PROGN (EXPORT '+ATOM--WM-ZOOM-HINTS+) (DEFCONSTANT +ATOM--WM-ZOOM-HINTS+ 42))
+(defconstant +button-mask--4+ 11)
 
-(PROGN (EXPORT '+ATOM--MIN-SPACE+) (DEFCONSTANT +ATOM--MIN-SPACE+ 43))
+(export '+button-mask--5+)
 
-(PROGN (EXPORT '+ATOM--NORM-SPACE+) (DEFCONSTANT +ATOM--NORM-SPACE+ 44))
+(defconstant +button-mask--5+ 12)
 
-(PROGN (EXPORT '+ATOM--MAX-SPACE+) (DEFCONSTANT +ATOM--MAX-SPACE+ 45))
+(export '+button-mask--any+)
 
-(PROGN (EXPORT '+ATOM--END-SPACE+) (DEFCONSTANT +ATOM--END-SPACE+ 46))
+(defconstant +button-mask--any+ 15)
 
-(PROGN (EXPORT '+ATOM--SUPERSCRIPT-X+) (DEFCONSTANT +ATOM--SUPERSCRIPT-X+ 47))
+(define-event button-press 4
+ ((button detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (bool same-screen) (pad bytes 1)))
 
-(PROGN (EXPORT '+ATOM--SUPERSCRIPT-Y+) (DEFCONSTANT +ATOM--SUPERSCRIPT-Y+ 48))
+(define-event button-release 5
+ ((button detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (bool same-screen) (pad bytes 1)))
 
-(PROGN (EXPORT '+ATOM--SUBSCRIPT-X+) (DEFCONSTANT +ATOM--SUBSCRIPT-X+ 49))
+(export '+motion--normal+)
 
-(PROGN (EXPORT '+ATOM--SUBSCRIPT-Y+) (DEFCONSTANT +ATOM--SUBSCRIPT-Y+ 50))
+(defconstant +motion--normal+ 0)
 
-(PROGN
- (EXPORT '+ATOM--UNDERLINE-POSITION+)
- (DEFCONSTANT +ATOM--UNDERLINE-POSITION+ 51))
+(export '+motion--hint+)
 
-(PROGN
- (EXPORT '+ATOM--UNDERLINE-THICKNESS+)
- (DEFCONSTANT +ATOM--UNDERLINE-THICKNESS+ 52))
+(defconstant +motion--hint+ 1)
 
-(PROGN
- (EXPORT '+ATOM--STRIKEOUT-ASCENT+)
- (DEFCONSTANT +ATOM--STRIKEOUT-ASCENT+ 53))
+(define-event motion-notify 6
+ ((byte detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (bool same-screen) (pad bytes 1)))
 
-(PROGN
- (EXPORT '+ATOM--STRIKEOUT-DESCENT+)
- (DEFCONSTANT +ATOM--STRIKEOUT-DESCENT+ 54))
+(export '+notify-detail--ancestor+)
 
-(PROGN (EXPORT '+ATOM--ITALIC-ANGLE+) (DEFCONSTANT +ATOM--ITALIC-ANGLE+ 55))
+(defconstant +notify-detail--ancestor+ 0)
 
-(PROGN (EXPORT '+ATOM--X-HEIGHT+) (DEFCONSTANT +ATOM--X-HEIGHT+ 56))
+(export '+notify-detail--virtual+)
 
-(PROGN (EXPORT '+ATOM--QUAD-WIDTH+) (DEFCONSTANT +ATOM--QUAD-WIDTH+ 57))
+(defconstant +notify-detail--virtual+ 1)
 
-(PROGN (EXPORT '+ATOM--WEIGHT+) (DEFCONSTANT +ATOM--WEIGHT+ 58))
+(export '+notify-detail--inferior+)
 
-(PROGN (EXPORT '+ATOM--POINT-SIZE+) (DEFCONSTANT +ATOM--POINT-SIZE+ 59))
+(defconstant +notify-detail--inferior+ 2)
 
-(PROGN (EXPORT '+ATOM--RESOLUTION+) (DEFCONSTANT +ATOM--RESOLUTION+ 60))
+(export '+notify-detail--nonlinear+)
 
-(PROGN (EXPORT '+ATOM--COPYRIGHT+) (DEFCONSTANT +ATOM--COPYRIGHT+ 61))
+(defconstant +notify-detail--nonlinear+ 3)
 
-(PROGN (EXPORT '+ATOM--NOTICE+) (DEFCONSTANT +ATOM--NOTICE+ 62))
+(export '+notify-detail--nonlinear-virtual+)
 
-(PROGN (EXPORT '+ATOM--FONT-NAME+) (DEFCONSTANT +ATOM--FONT-NAME+ 63))
+(defconstant +notify-detail--nonlinear-virtual+ 4)
 
-(PROGN (EXPORT '+ATOM--FAMILY-NAME+) (DEFCONSTANT +ATOM--FAMILY-NAME+ 64))
+(export '+notify-detail--pointer+)
 
-(PROGN (EXPORT '+ATOM--FULL-NAME+) (DEFCONSTANT +ATOM--FULL-NAME+ 65))
+(defconstant +notify-detail--pointer+ 5)
 
-(PROGN (EXPORT '+ATOM--CAP-HEIGHT+) (DEFCONSTANT +ATOM--CAP-HEIGHT+ 66))
+(export '+notify-detail--pointer-root+)
 
-(PROGN (EXPORT '+ATOM--WM-CLASS+) (DEFCONSTANT +ATOM--WM-CLASS+ 67))
+(defconstant +notify-detail--pointer-root+ 6)
 
-(PROGN
- (EXPORT '+ATOM--WM-TRANSIENT-FOR+)
- (DEFCONSTANT +ATOM--WM-TRANSIENT-FOR+ 68))
+(export '+notify-detail--none+)
 
-(DEFINE-EVENT SELECTION-REQUEST 30
- ((PAD BYTES 1) (TIMESTAMP TIME) (WINDOW OWNER) (WINDOW REQUESTOR)
-  (ATOM SELECTION) (ATOM TARGET) (ATOM PROPERTY)))
+(defconstant +notify-detail--none+ 7)
 
-(DEFINE-EVENT SELECTION-NOTIFY 31
- ((PAD BYTES 1) (TIMESTAMP TIME) (WINDOW REQUESTOR) (ATOM SELECTION)
-  (ATOM TARGET) (ATOM PROPERTY)))
+(export '+notify-mode--normal+)
 
-(PROGN
- (EXPORT '+COLORMAP-STATE--UNINSTALLED+)
- (DEFCONSTANT +COLORMAP-STATE--UNINSTALLED+ 0))
+(defconstant +notify-mode--normal+ 0)
 
-(PROGN
- (EXPORT '+COLORMAP-STATE--INSTALLED+)
- (DEFCONSTANT +COLORMAP-STATE--INSTALLED+ 1))
+(export '+notify-mode--grab+)
 
-(PROGN (EXPORT '+COLORMAP--NONE+) (DEFCONSTANT +COLORMAP--NONE+ 0))
+(defconstant +notify-mode--grab+ 1)
 
-(DEFINE-EVENT COLORMAP-NOTIFY 32
- ((PAD BYTES 1) (WINDOW WINDOW) (COLORMAP COLORMAP) (BOOL NEW) (BYTE STATE)
-  (PAD BYTES 2)))
+(export '+notify-mode--ungrab+)
 
-(DEFINE-EVENT CLIENT-MESSAGE 33
- ((CARD8 FORMAT) (WINDOW WINDOW) (ATOM TYPE) (CLIENT-MESSAGE-DATA DATA)))
+(defconstant +notify-mode--ungrab+ 2)
 
-(PROGN (EXPORT '+MAPPING--MODIFIER+) (DEFCONSTANT +MAPPING--MODIFIER+ 0))
+(export '+notify-mode--while-grabbed+)
 
-(PROGN (EXPORT '+MAPPING--KEYBOARD+) (DEFCONSTANT +MAPPING--KEYBOARD+ 1))
+(defconstant +notify-mode--while-grabbed+ 3)
 
-(PROGN (EXPORT '+MAPPING--POINTER+) (DEFCONSTANT +MAPPING--POINTER+ 2))
+(define-event enter-notify 7
+ ((byte detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (byte mode) (byte same-screen-focus)))
 
-(DEFINE-EVENT MAPPING-NOTIFY 34
- ((PAD BYTES 1) (BYTE REQUEST) (KEYCODE FIRST-KEYCODE) (CARD8 COUNT)
-  (PAD BYTES 1)))
+(define-event leave-notify 8
+ ((byte detail) (timestamp time) (window root) (window event) (window child)
+  (int16 root-x) (int16 root-y) (int16 event-x) (int16 event-y) (card16 state)
+  (byte mode) (byte same-screen-focus)))
 
-(DEFINE-EVENT GE-GENERIC 35 ((PAD BYTES 22)))
+(define-event focus-in 9
+ ((byte detail) (window event) (byte mode) (pad bytes 3)))
 
-(DEFINE-ERROR REQUEST 1)
+(define-event focus-out 10
+ ((byte detail) (window event) (byte mode) (pad bytes 3)))
 
-(DEFINE-ERROR VALUE 2)
+(define-event keymap-notify 11 ((list card8 31 keys)))
 
-(DEFINE-ERROR WINDOW 3)
+(define-event expose 12
+ ((pad bytes 1) (window window) (card16 x) (card16 y) (card16 width)
+  (card16 height) (card16 count) (pad bytes 2)))
 
-(DEFINE-ERROR PIXMAP 4)
+(define-event graphics-exposure 13
+ ((pad bytes 1) (drawable drawable) (card16 x) (card16 y) (card16 width)
+  (card16 height) (card16 minor-opcode) (card16 count) (card8 major-opcode)
+  (pad bytes 3)))
 
-(DEFINE-ERROR ATOM 5)
+(define-event no-exposure 14
+ ((pad bytes 1) (drawable drawable) (card16 minor-opcode) (card8 major-opcode)
+  (pad bytes 1)))
 
-(DEFINE-ERROR CURSOR 6)
+(export '+visibility--unobscured+)
 
-(DEFINE-ERROR FONT 7)
+(defconstant +visibility--unobscured+ 0)
 
-(DEFINE-ERROR MATCH 8)
+(export '+visibility--partially-obscured+)
 
-(DEFINE-ERROR DRAWABLE 9)
+(defconstant +visibility--partially-obscured+ 1)
 
-(DEFINE-ERROR ACCESS 10)
+(export '+visibility--fully-obscured+)
 
-(DEFINE-ERROR ALLOC 11)
+(defconstant +visibility--fully-obscured+ 2)
 
-(DEFINE-ERROR COLORMAP 12)
+(define-event visibility-notify 15
+ ((pad bytes 1) (window window) (byte state) (pad bytes 3)))
 
-(DEFINE-ERROR GCONTEXT 13)
+(define-event create-notify 16
+ ((pad bytes 1) (window parent) (window window) (int16 x) (int16 y)
+  (card16 width) (card16 height) (card16 border-width) (bool override-redirect)
+  (pad bytes 1)))
 
-(DEFINE-ERROR IDCHOICE 14)
+(define-event destroy-notify 17 ((pad bytes 1) (window event) (window window)))
 
-(DEFINE-ERROR NAME 15)
+(define-event unmap-notify 18
+ ((pad bytes 1) (window event) (window window) (bool from-configure)
+  (pad bytes 3)))
 
-(DEFINE-ERROR LENGTH 16)
+(define-event map-notify 19
+ ((pad bytes 1) (window event) (window window) (bool override-redirect)
+  (pad bytes 3)))
 
-(DEFINE-ERROR IMPLEMENTATION 17)
+(define-event map-request 20 ((pad bytes 1) (window parent) (window window)))
 
-(PROGN
- (EXPORT '+WINDOW-CLASS--COPY-FROM-PARENT+)
- (DEFCONSTANT +WINDOW-CLASS--COPY-FROM-PARENT+ 0))
+(define-event reparent-notify 21
+ ((pad bytes 1) (window event) (window window) (window parent) (int16 x)
+  (int16 y) (bool override-redirect) (pad bytes 3)))
 
-(PROGN
- (EXPORT '+WINDOW-CLASS--INPUT-OUTPUT+)
- (DEFCONSTANT +WINDOW-CLASS--INPUT-OUTPUT+ 1))
+(define-event configure-notify 22
+ ((pad bytes 1) (window event) (window window) (window above-sibling) (int16 x)
+  (int16 y) (card16 width) (card16 height) (card16 border-width)
+  (bool override-redirect) (pad bytes 1)))
 
-(PROGN
- (EXPORT '+WINDOW-CLASS--INPUT-ONLY+)
- (DEFCONSTANT +WINDOW-CLASS--INPUT-ONLY+ 2))
+(define-event configure-request 23
+ ((byte stack-mode) (window parent) (window window) (window sibling) (int16 x)
+  (int16 y) (card16 width) (card16 height) (card16 border-width)
+  (card16 value-mask)))
 
-(PROGN (EXPORT '+CW--BACK-PIXMAP+) (DEFCONSTANT +CW--BACK-PIXMAP+ 0))
+(define-event gravity-notify 24
+ ((pad bytes 1) (window event) (window window) (int16 x) (int16 y)))
 
-(PROGN (EXPORT '+CW--BACK-PIXEL+) (DEFCONSTANT +CW--BACK-PIXEL+ 1))
+(define-event resize-request 25
+ ((pad bytes 1) (window window) (card16 width) (card16 height)))
 
-(PROGN (EXPORT '+CW--BORDER-PIXMAP+) (DEFCONSTANT +CW--BORDER-PIXMAP+ 2))
+(export '+place--on-top+)
 
-(PROGN (EXPORT '+CW--BORDER-PIXEL+) (DEFCONSTANT +CW--BORDER-PIXEL+ 3))
+(defconstant +place--on-top+ 0)
 
-(PROGN (EXPORT '+CW--BIT-GRAVITY+) (DEFCONSTANT +CW--BIT-GRAVITY+ 4))
+(export '+place--on-bottom+)
 
-(PROGN (EXPORT '+CW--WIN-GRAVITY+) (DEFCONSTANT +CW--WIN-GRAVITY+ 5))
+(defconstant +place--on-bottom+ 1)
 
-(PROGN (EXPORT '+CW--BACKING-STORE+) (DEFCONSTANT +CW--BACKING-STORE+ 6))
+(define-event circulate-notify 26
+ ((pad bytes 1) (window event) (window window) (pad bytes 4) (byte place)
+  (pad bytes 3)))
 
-(PROGN (EXPORT '+CW--BACKING-PLANES+) (DEFCONSTANT +CW--BACKING-PLANES+ 7))
+(define-event circulate-request 27
+ ((pad bytes 1) (window event) (window window) (pad bytes 4) (byte place)
+  (pad bytes 3)))
 
-(PROGN (EXPORT '+CW--BACKING-PIXEL+) (DEFCONSTANT +CW--BACKING-PIXEL+ 8))
+(export '+property--new-value+)
 
-(PROGN
- (EXPORT '+CW--OVERRIDE-REDIRECT+)
- (DEFCONSTANT +CW--OVERRIDE-REDIRECT+ 9))
+(defconstant +property--new-value+ 0)
 
-(PROGN (EXPORT '+CW--SAVE-UNDER+) (DEFCONSTANT +CW--SAVE-UNDER+ 10))
+(export '+property--delete+)
 
-(PROGN (EXPORT '+CW--EVENT-MASK+) (DEFCONSTANT +CW--EVENT-MASK+ 11))
+(defconstant +property--delete+ 1)
 
-(PROGN (EXPORT '+CW--DONT-PROPAGATE+) (DEFCONSTANT +CW--DONT-PROPAGATE+ 12))
+(define-event property-notify 28
+ ((pad bytes 1) (window window) (atom atom) (timestamp time) (byte state)
+  (pad bytes 3)))
 
-(PROGN (EXPORT '+CW--COLORMAP+) (DEFCONSTANT +CW--COLORMAP+ 13))
+(define-event selection-clear 29
+ ((pad bytes 1) (timestamp time) (window owner) (atom selection)))
 
-(PROGN (EXPORT '+CW--CURSOR+) (DEFCONSTANT +CW--CURSOR+ 14))
+(export '+time--current-time+)
 
-(PROGN (EXPORT '+BACK-PIXMAP--NONE+) (DEFCONSTANT +BACK-PIXMAP--NONE+ 0))
+(defconstant +time--current-time+ 0)
 
-(PROGN
- (EXPORT '+BACK-PIXMAP--PARENT-RELATIVE+)
- (DEFCONSTANT +BACK-PIXMAP--PARENT-RELATIVE+ 1))
+(export '+atom--none+)
 
-(PROGN (EXPORT '+GRAVITY--BIT-FORGET+) (DEFCONSTANT +GRAVITY--BIT-FORGET+ 0))
+(defconstant +atom--none+ 0)
 
-(PROGN (EXPORT '+GRAVITY--WIN-UNMAP+) (DEFCONSTANT +GRAVITY--WIN-UNMAP+ 0))
+(export '+atom--any+)
 
-(PROGN (EXPORT '+GRAVITY--NORTH-WEST+) (DEFCONSTANT +GRAVITY--NORTH-WEST+ 1))
+(defconstant +atom--any+ 0)
 
-(PROGN (EXPORT '+GRAVITY--NORTH+) (DEFCONSTANT +GRAVITY--NORTH+ 2))
+(export '+atom--primary+)
 
-(PROGN (EXPORT '+GRAVITY--NORTH-EAST+) (DEFCONSTANT +GRAVITY--NORTH-EAST+ 3))
+(defconstant +atom--primary+ 1)
 
-(PROGN (EXPORT '+GRAVITY--WEST+) (DEFCONSTANT +GRAVITY--WEST+ 4))
+(export '+atom--secondary+)
 
-(PROGN (EXPORT '+GRAVITY--CENTER+) (DEFCONSTANT +GRAVITY--CENTER+ 5))
+(defconstant +atom--secondary+ 2)
 
-(PROGN (EXPORT '+GRAVITY--EAST+) (DEFCONSTANT +GRAVITY--EAST+ 6))
+(export '+atom--arc+)
 
-(PROGN (EXPORT '+GRAVITY--SOUTH-WEST+) (DEFCONSTANT +GRAVITY--SOUTH-WEST+ 7))
+(defconstant +atom--arc+ 3)
 
-(PROGN (EXPORT '+GRAVITY--SOUTH+) (DEFCONSTANT +GRAVITY--SOUTH+ 8))
+(export '+atom--atom+)
 
-(PROGN (EXPORT '+GRAVITY--SOUTH-EAST+) (DEFCONSTANT +GRAVITY--SOUTH-EAST+ 9))
+(defconstant +atom--atom+ 4)
 
-(PROGN (EXPORT '+GRAVITY--STATIC+) (DEFCONSTANT +GRAVITY--STATIC+ 10))
+(export '+atom--bitmap+)
 
-(DEFINE-REQUEST CREATE-WINDOW 1
- ((CARD8 DEPTH) (WINDOW WID) (WINDOW PARENT) (INT16 X) (INT16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD16 BORDER-WIDTH) (CARD16 CLASS) (VISUALID VISUAL)
-  (CARD32 VALUE-MASK)
-  (BITCASE VALUE-MASK (+CW--BACK-PIXMAP+ (PIXMAP BACKGROUND-PIXMAP))
-   (+CW--BACK-PIXEL+ (CARD32 BACKGROUND-PIXEL))
-   (+CW--BORDER-PIXMAP+ (PIXMAP BORDER-PIXMAP))
-   (+CW--BORDER-PIXEL+ (CARD32 BORDER-PIXEL))
-   (+CW--BIT-GRAVITY+ (CARD32 BIT-GRAVITY))
-   (+CW--WIN-GRAVITY+ (CARD32 WIN-GRAVITY))
-   (+CW--BACKING-STORE+ (CARD32 BACKING-STORE))
-   (+CW--BACKING-PLANES+ (CARD32 BACKING-PLANES))
-   (+CW--BACKING-PIXEL+ (CARD32 BACKING-PIXEL))
-   (+CW--OVERRIDE-REDIRECT+ (BOOL32 OVERRIDE-REDIRECT))
-   (+CW--SAVE-UNDER+ (BOOL32 SAVE-UNDER))
-   (+CW--EVENT-MASK+ (CARD32 EVENT-MASK))
-   (+CW--DONT-PROPAGATE+ (CARD32 DO-NOT-PROPOGATE-MASK))
-   (+CW--COLORMAP+ (COLORMAP COLORMAP)) (+CW--CURSOR+ (CURSOR CURSOR))))
- NIL)
+(defconstant +atom--bitmap+ 5)
 
-(DEFINE-REQUEST CHANGE-WINDOW-ATTRIBUTES 2
- ((PAD BYTES 1) (WINDOW WINDOW) (CARD32 VALUE-MASK)
-  (BITCASE VALUE-MASK (+CW--BACK-PIXMAP+ (PIXMAP BACKGROUND-PIXMAP))
-   (+CW--BACK-PIXEL+ (CARD32 BACKGROUND-PIXEL))
-   (+CW--BORDER-PIXMAP+ (PIXMAP BORDER-PIXMAP))
-   (+CW--BORDER-PIXEL+ (CARD32 BORDER-PIXEL))
-   (+CW--BIT-GRAVITY+ (CARD32 BIT-GRAVITY))
-   (+CW--WIN-GRAVITY+ (CARD32 WIN-GRAVITY))
-   (+CW--BACKING-STORE+ (CARD32 BACKING-STORE))
-   (+CW--BACKING-PLANES+ (CARD32 BACKING-PLANES))
-   (+CW--BACKING-PIXEL+ (CARD32 BACKING-PIXEL))
-   (+CW--OVERRIDE-REDIRECT+ (BOOL32 OVERRIDE-REDIRECT))
-   (+CW--SAVE-UNDER+ (BOOL32 SAVE-UNDER))
-   (+CW--EVENT-MASK+ (CARD32 EVENT-MASK))
-   (+CW--DONT-PROPAGATE+ (CARD32 DO-NOT-PROPOGATE-MASK))
-   (+CW--COLORMAP+ (COLORMAP COLORMAP)) (+CW--CURSOR+ (CURSOR CURSOR))))
- NIL)
+(export '+atom--cardinal+)
 
-(PROGN (EXPORT '+MAP-STATE--UNMAPPED+) (DEFCONSTANT +MAP-STATE--UNMAPPED+ 0))
+(defconstant +atom--cardinal+ 6)
 
-(PROGN
- (EXPORT '+MAP-STATE--UNVIEWABLE+)
- (DEFCONSTANT +MAP-STATE--UNVIEWABLE+ 1))
+(export '+atom--colormap+)
 
-(PROGN (EXPORT '+MAP-STATE--VIEWABLE+) (DEFCONSTANT +MAP-STATE--VIEWABLE+ 2))
+(defconstant +atom--colormap+ 7)
 
-(DEFINE-REQUEST GET-WINDOW-ATTRIBUTES 3 ((PAD BYTES 1) (WINDOW WINDOW))
- ((CARD8 BACKING-STORE) (VISUALID VISUAL) (CARD16 CLASS) (CARD8 BIT-GRAVITY)
-  (CARD8 WIN-GRAVITY) (CARD32 BACKING-PLANES) (CARD32 BACKING-PIXEL)
-  (BOOL SAVE-UNDER) (BOOL MAP-IS-INSTALLED) (CARD8 MAP-STATE)
-  (BOOL OVERRIDE-REDIRECT) (COLORMAP COLORMAP) (CARD32 ALL-EVENT-MASKS)
-  (CARD32 YOUR-EVENT-MASK) (CARD16 DO-NOT-PROPAGATE-MASK) (PAD BYTES 2)))
+(export '+atom--cursor+)
 
-(DEFINE-REQUEST DESTROY-WINDOW 4 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(defconstant +atom--cursor+ 8)
 
-(DEFINE-REQUEST DESTROY-SUBWINDOWS 5 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(export '+atom--cut-buffer0+)
 
-(PROGN (EXPORT '+SET-MODE--INSERT+) (DEFCONSTANT +SET-MODE--INSERT+ 0))
+(defconstant +atom--cut-buffer0+ 9)
 
-(PROGN (EXPORT '+SET-MODE--DELETE+) (DEFCONSTANT +SET-MODE--DELETE+ 1))
+(export '+atom--cut-buffer1+)
 
-(DEFINE-REQUEST CHANGE-SAVE-SET 6 ((BYTE MODE) (WINDOW WINDOW)) NIL)
+(defconstant +atom--cut-buffer1+ 10)
 
-(DEFINE-REQUEST REPARENT-WINDOW 7
- ((PAD BYTES 1) (WINDOW WINDOW) (WINDOW PARENT) (INT16 X) (INT16 Y)) NIL)
+(export '+atom--cut-buffer2+)
 
-(DEFINE-REQUEST MAP-WINDOW 8 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(defconstant +atom--cut-buffer2+ 11)
 
-(DEFINE-REQUEST MAP-SUBWINDOWS 9 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(export '+atom--cut-buffer3+)
 
-(DEFINE-REQUEST UNMAP-WINDOW 10 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(defconstant +atom--cut-buffer3+ 12)
 
-(DEFINE-REQUEST UNMAP-SUBWINDOWS 11 ((PAD BYTES 1) (WINDOW WINDOW)) NIL)
+(export '+atom--cut-buffer4+)
 
-(PROGN (EXPORT '+CONFIG-WINDOW--X+) (DEFCONSTANT +CONFIG-WINDOW--X+ 0))
+(defconstant +atom--cut-buffer4+ 13)
 
-(PROGN (EXPORT '+CONFIG-WINDOW--Y+) (DEFCONSTANT +CONFIG-WINDOW--Y+ 1))
+(export '+atom--cut-buffer5+)
 
-(PROGN (EXPORT '+CONFIG-WINDOW--WIDTH+) (DEFCONSTANT +CONFIG-WINDOW--WIDTH+ 2))
+(defconstant +atom--cut-buffer5+ 14)
 
-(PROGN
- (EXPORT '+CONFIG-WINDOW--HEIGHT+)
- (DEFCONSTANT +CONFIG-WINDOW--HEIGHT+ 3))
+(export '+atom--cut-buffer6+)
 
-(PROGN
- (EXPORT '+CONFIG-WINDOW--BORDER-WIDTH+)
- (DEFCONSTANT +CONFIG-WINDOW--BORDER-WIDTH+ 4))
+(defconstant +atom--cut-buffer6+ 15)
 
-(PROGN
- (EXPORT '+CONFIG-WINDOW--SIBLING+)
- (DEFCONSTANT +CONFIG-WINDOW--SIBLING+ 5))
+(export '+atom--cut-buffer7+)
 
-(PROGN
- (EXPORT '+CONFIG-WINDOW--STACK-MODE+)
- (DEFCONSTANT +CONFIG-WINDOW--STACK-MODE+ 6))
+(defconstant +atom--cut-buffer7+ 16)
 
-(PROGN (EXPORT '+STACK-MODE--ABOVE+) (DEFCONSTANT +STACK-MODE--ABOVE+ 0))
+(export '+atom--drawable+)
 
-(PROGN (EXPORT '+STACK-MODE--BELOW+) (DEFCONSTANT +STACK-MODE--BELOW+ 1))
+(defconstant +atom--drawable+ 17)
 
-(PROGN (EXPORT '+STACK-MODE--TOP-IF+) (DEFCONSTANT +STACK-MODE--TOP-IF+ 2))
+(export '+atom--font+)
 
-(PROGN
- (EXPORT '+STACK-MODE--BOTTOM-IF+)
- (DEFCONSTANT +STACK-MODE--BOTTOM-IF+ 3))
+(defconstant +atom--font+ 18)
 
-(PROGN (EXPORT '+STACK-MODE--OPPOSITE+) (DEFCONSTANT +STACK-MODE--OPPOSITE+ 4))
+(export '+atom--integer+)
 
-(DEFINE-REQUEST CONFIGURE-WINDOW 12
- ((PAD BYTES 1) (WINDOW WINDOW) (CARD16 VALUE-MASK) (PAD BYTES 2)
-  (BITCASE VALUE-MASK (+CONFIG-WINDOW--X+ (INT32 X))
-   (+CONFIG-WINDOW--Y+ (INT32 Y)) (+CONFIG-WINDOW--WIDTH+ (CARD32 WIDTH))
-   (+CONFIG-WINDOW--HEIGHT+ (CARD32 HEIGHT))
-   (+CONFIG-WINDOW--BORDER-WIDTH+ (CARD32 BORDER-WIDTH))
-   (+CONFIG-WINDOW--SIBLING+ (WINDOW SIBLING))
-   (+CONFIG-WINDOW--STACK-MODE+ (CARD32 STACK-MODE))))
- NIL)
+(defconstant +atom--integer+ 19)
 
-(PROGN
- (EXPORT '+CIRCULATE--RAISE-LOWEST+)
- (DEFCONSTANT +CIRCULATE--RAISE-LOWEST+ 0))
+(export '+atom--pixmap+)
 
-(PROGN
- (EXPORT '+CIRCULATE--LOWER-HIGHEST+)
- (DEFCONSTANT +CIRCULATE--LOWER-HIGHEST+ 1))
+(defconstant +atom--pixmap+ 20)
 
-(DEFINE-REQUEST CIRCULATE-WINDOW 13 ((CARD8 DIRECTION) (WINDOW WINDOW)) NIL)
+(export '+atom--point+)
 
-(DEFINE-REQUEST GET-GEOMETRY 14 ((PAD BYTES 1) (DRAWABLE DRAWABLE))
- ((CARD8 DEPTH) (WINDOW ROOT) (INT16 X) (INT16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD16 BORDER-WIDTH) (PAD BYTES 2)))
+(defconstant +atom--point+ 21)
 
-(DEFINE-REQUEST QUERY-TREE 15 ((PAD BYTES 1) (WINDOW WINDOW))
- ((PAD BYTES 1) (WINDOW ROOT) (WINDOW PARENT) (CARD16 CHILDREN-LEN)
-  (PAD BYTES 14) (LIST WINDOW CHILDREN-LEN CHILDREN)))
+(export '+atom--rectangle+)
 
-(DEFINE-REQUEST INTERN-ATOM 16
- ((BOOL ONLY-IF-EXISTS) (CARD16 NAME-LEN) (PAD BYTES 2)
-  (LIST CHAR NAME-LEN NAME))
- ((PAD BYTES 1) (ATOM ATOM)))
+(defconstant +atom--rectangle+ 22)
 
-(DEFINE-REQUEST GET-ATOM-NAME 17 ((PAD BYTES 1) (ATOM ATOM))
- ((PAD BYTES 1) (CARD16 NAME-LEN) (PAD BYTES 22) (LIST CHAR NAME-LEN NAME)))
+(export '+atom--resource-manager+)
 
-(PROGN (EXPORT '+PROP-MODE--REPLACE+) (DEFCONSTANT +PROP-MODE--REPLACE+ 0))
+(defconstant +atom--resource-manager+ 23)
 
-(PROGN (EXPORT '+PROP-MODE--PREPEND+) (DEFCONSTANT +PROP-MODE--PREPEND+ 1))
+(export '+atom--rgb-color-map+)
 
-(PROGN (EXPORT '+PROP-MODE--APPEND+) (DEFCONSTANT +PROP-MODE--APPEND+ 2))
+(defconstant +atom--rgb-color-map+ 24)
 
-(DEFINE-REQUEST CHANGE-PROPERTY 18
- ((CARD8 MODE) (WINDOW WINDOW) (ATOM PROPERTY) (ATOM TYPE) (CARD8 FORMAT)
-  (PAD BYTES 3) (CARD32 DATA-LEN) (LIST VOID (/ (* DATA-LEN FORMAT) 8) DATA))
- NIL)
+(export '+atom--rgb-best-map+)
 
-(DEFINE-REQUEST DELETE-PROPERTY 19
- ((PAD BYTES 1) (WINDOW WINDOW) (ATOM PROPERTY)) NIL)
+(defconstant +atom--rgb-best-map+ 25)
 
-(PROGN
- (EXPORT '+GET-PROPERTY-TYPE--ANY+)
- (DEFCONSTANT +GET-PROPERTY-TYPE--ANY+ 0))
+(export '+atom--rgb-blue-map+)
 
-(DEFINE-REQUEST GET-PROPERTY 20
- ((BOOL DELETE) (WINDOW WINDOW) (ATOM PROPERTY) (ATOM TYPE)
-  (CARD32 LONG-OFFSET) (CARD32 LONG-LENGTH))
- ((CARD8 FORMAT) (ATOM TYPE) (CARD32 BYTES-AFTER) (CARD32 VALUE-LEN)
-  (PAD BYTES 12) (LIST VOID (* VALUE-LEN (/ FORMAT 8)) VALUE)))
+(defconstant +atom--rgb-blue-map+ 26)
 
-(DEFINE-REQUEST LIST-PROPERTIES 21 ((PAD BYTES 1) (WINDOW WINDOW))
- ((PAD BYTES 1) (CARD16 ATOMS-LEN) (PAD BYTES 22) (LIST ATOM ATOMS-LEN ATOMS)))
+(export '+atom--rgb-default-map+)
 
-(DEFINE-REQUEST SET-SELECTION-OWNER 22
- ((PAD BYTES 1) (WINDOW OWNER) (ATOM SELECTION) (TIMESTAMP TIME)) NIL)
+(defconstant +atom--rgb-default-map+ 27)
 
-(DEFINE-REQUEST GET-SELECTION-OWNER 23 ((PAD BYTES 1) (ATOM SELECTION))
- ((PAD BYTES 1) (WINDOW OWNER)))
+(export '+atom--rgb-gray-map+)
 
-(DEFINE-REQUEST CONVERT-SELECTION 24
- ((PAD BYTES 1) (WINDOW REQUESTOR) (ATOM SELECTION) (ATOM TARGET)
-  (ATOM PROPERTY) (TIMESTAMP TIME))
- NIL)
+(defconstant +atom--rgb-gray-map+ 28)
 
-(PROGN
- (EXPORT '+SEND-EVENT-DEST--POINTER-WINDOW+)
- (DEFCONSTANT +SEND-EVENT-DEST--POINTER-WINDOW+ 0))
+(export '+atom--rgb-green-map+)
 
-(PROGN
- (EXPORT '+SEND-EVENT-DEST--ITEM-FOCUS+)
- (DEFCONSTANT +SEND-EVENT-DEST--ITEM-FOCUS+ 1))
+(defconstant +atom--rgb-green-map+ 29)
 
-(DEFINE-REQUEST SEND-EVENT 25
- ((BOOL PROPAGATE) (WINDOW DESTINATION) (CARD32 EVENT-MASK)
-  (LIST CHAR 32 EVENT))
- NIL)
+(export '+atom--rgb-red-map+)
 
-(PROGN (EXPORT '+GRAB-MODE--SYNC+) (DEFCONSTANT +GRAB-MODE--SYNC+ 0))
+(defconstant +atom--rgb-red-map+ 30)
 
-(PROGN (EXPORT '+GRAB-MODE--ASYNC+) (DEFCONSTANT +GRAB-MODE--ASYNC+ 1))
+(export '+atom--string+)
 
-(PROGN (EXPORT '+GRAB-STATUS--SUCCESS+) (DEFCONSTANT +GRAB-STATUS--SUCCESS+ 0))
+(defconstant +atom--string+ 31)
 
-(PROGN
- (EXPORT '+GRAB-STATUS--ALREADY-GRABBED+)
- (DEFCONSTANT +GRAB-STATUS--ALREADY-GRABBED+ 1))
+(export '+atom--visualid+)
 
-(PROGN
- (EXPORT '+GRAB-STATUS--INVALID-TIME+)
- (DEFCONSTANT +GRAB-STATUS--INVALID-TIME+ 2))
+(defconstant +atom--visualid+ 32)
 
-(PROGN
- (EXPORT '+GRAB-STATUS--NOT-VIEWABLE+)
- (DEFCONSTANT +GRAB-STATUS--NOT-VIEWABLE+ 3))
+(export '+atom--window+)
 
-(PROGN (EXPORT '+GRAB-STATUS--FROZEN+) (DEFCONSTANT +GRAB-STATUS--FROZEN+ 4))
+(defconstant +atom--window+ 33)
 
-(PROGN (EXPORT '+CURSOR--NONE+) (DEFCONSTANT +CURSOR--NONE+ 0))
+(export '+atom--wm-command+)
 
-(DEFINE-REQUEST GRAB-POINTER 26
- ((BOOL OWNER-EVENTS) (WINDOW GRAB-WINDOW) (CARD16 EVENT-MASK)
-  (BYTE POINTER-MODE) (BYTE KEYBOARD-MODE) (WINDOW CONFINE-TO) (CURSOR CURSOR)
-  (TIMESTAMP TIME))
- ((BYTE STATUS)))
+(defconstant +atom--wm-command+ 34)
 
-(DEFINE-REQUEST UNGRAB-POINTER 27 ((PAD BYTES 1) (TIMESTAMP TIME)) NIL)
+(export '+atom--wm-hints+)
 
-(PROGN (EXPORT '+BUTTON-INDEX--ANY+) (DEFCONSTANT +BUTTON-INDEX--ANY+ 0))
+(defconstant +atom--wm-hints+ 35)
 
-(PROGN (EXPORT '+BUTTON-INDEX--1+) (DEFCONSTANT +BUTTON-INDEX--1+ 1))
+(export '+atom--wm-client-machine+)
 
-(PROGN (EXPORT '+BUTTON-INDEX--2+) (DEFCONSTANT +BUTTON-INDEX--2+ 2))
+(defconstant +atom--wm-client-machine+ 36)
 
-(PROGN (EXPORT '+BUTTON-INDEX--3+) (DEFCONSTANT +BUTTON-INDEX--3+ 3))
+(export '+atom--wm-icon-name+)
 
-(PROGN (EXPORT '+BUTTON-INDEX--4+) (DEFCONSTANT +BUTTON-INDEX--4+ 4))
+(defconstant +atom--wm-icon-name+ 37)
 
-(PROGN (EXPORT '+BUTTON-INDEX--5+) (DEFCONSTANT +BUTTON-INDEX--5+ 5))
+(export '+atom--wm-icon-size+)
 
-(DEFINE-REQUEST GRAB-BUTTON 28
- ((BOOL OWNER-EVENTS) (WINDOW GRAB-WINDOW) (CARD16 EVENT-MASK)
-  (CARD8 POINTER-MODE) (CARD8 KEYBOARD-MODE) (WINDOW CONFINE-TO)
-  (CURSOR CURSOR) (CARD8 BUTTON) (PAD BYTES 1) (CARD16 MODIFIERS))
- NIL)
+(defconstant +atom--wm-icon-size+ 38)
 
-(DEFINE-REQUEST UNGRAB-BUTTON 29
- ((CARD8 BUTTON) (WINDOW GRAB-WINDOW) (CARD16 MODIFIERS) (PAD BYTES 2)) NIL)
+(export '+atom--wm-name+)
 
-(DEFINE-REQUEST CHANGE-ACTIVE-POINTER-GRAB 30
- ((PAD BYTES 1) (CURSOR CURSOR) (TIMESTAMP TIME) (CARD16 EVENT-MASK)
-  (PAD BYTES 2))
- NIL)
+(defconstant +atom--wm-name+ 39)
 
-(DEFINE-REQUEST GRAB-KEYBOARD 31
- ((BOOL OWNER-EVENTS) (WINDOW GRAB-WINDOW) (TIMESTAMP TIME) (BYTE POINTER-MODE)
-  (BYTE KEYBOARD-MODE) (PAD BYTES 2))
- ((BYTE STATUS)))
+(export '+atom--wm-normal-hints+)
 
-(DEFINE-REQUEST UNGRAB-KEYBOARD 32 ((PAD BYTES 1) (TIMESTAMP TIME)) NIL)
+(defconstant +atom--wm-normal-hints+ 40)
 
-(PROGN (EXPORT '+GRAB--ANY+) (DEFCONSTANT +GRAB--ANY+ 0))
+(export '+atom--wm-size-hints+)
 
-(DEFINE-REQUEST GRAB-KEY 33
- ((BOOL OWNER-EVENTS) (WINDOW GRAB-WINDOW) (CARD16 MODIFIERS) (KEYCODE KEY)
-  (CARD8 POINTER-MODE) (CARD8 KEYBOARD-MODE) (PAD BYTES 3))
- NIL)
+(defconstant +atom--wm-size-hints+ 41)
 
-(DEFINE-REQUEST UNGRAB-KEY 34
- ((KEYCODE KEY) (WINDOW GRAB-WINDOW) (CARD16 MODIFIERS) (PAD BYTES 2)) NIL)
+(export '+atom--wm-zoom-hints+)
 
-(PROGN (EXPORT '+ALLOW--ASYNC-POINTER+) (DEFCONSTANT +ALLOW--ASYNC-POINTER+ 0))
+(defconstant +atom--wm-zoom-hints+ 42)
 
-(PROGN (EXPORT '+ALLOW--SYNC-POINTER+) (DEFCONSTANT +ALLOW--SYNC-POINTER+ 1))
+(export '+atom--min-space+)
 
-(PROGN
- (EXPORT '+ALLOW--REPLAY-POINTER+)
- (DEFCONSTANT +ALLOW--REPLAY-POINTER+ 2))
+(defconstant +atom--min-space+ 43)
 
-(PROGN
- (EXPORT '+ALLOW--ASYNC-KEYBOARD+)
- (DEFCONSTANT +ALLOW--ASYNC-KEYBOARD+ 3))
+(export '+atom--norm-space+)
 
-(PROGN (EXPORT '+ALLOW--SYNC-KEYBOARD+) (DEFCONSTANT +ALLOW--SYNC-KEYBOARD+ 4))
+(defconstant +atom--norm-space+ 44)
 
-(PROGN
- (EXPORT '+ALLOW--REPLAY-KEYBOARD+)
- (DEFCONSTANT +ALLOW--REPLAY-KEYBOARD+ 5))
+(export '+atom--max-space+)
 
-(PROGN (EXPORT '+ALLOW--ASYNC-BOTH+) (DEFCONSTANT +ALLOW--ASYNC-BOTH+ 6))
+(defconstant +atom--max-space+ 45)
 
-(PROGN (EXPORT '+ALLOW--SYNC-BOTH+) (DEFCONSTANT +ALLOW--SYNC-BOTH+ 7))
+(export '+atom--end-space+)
 
-(DEFINE-REQUEST ALLOW-EVENTS 35 ((CARD8 MODE) (TIMESTAMP TIME)) NIL)
+(defconstant +atom--end-space+ 46)
 
-(DEFINE-REQUEST GRAB-SERVER 36 NIL NIL)
+(export '+atom--superscript-x+)
 
-(DEFINE-REQUEST UNGRAB-SERVER 37 NIL NIL)
+(defconstant +atom--superscript-x+ 47)
 
-(DEFINE-REQUEST QUERY-POINTER 38 ((PAD BYTES 1) (WINDOW WINDOW))
- ((BOOL SAME-SCREEN) (WINDOW ROOT) (WINDOW CHILD) (INT16 ROOT-X) (INT16 ROOT-Y)
-  (INT16 WIN-X) (INT16 WIN-Y) (CARD16 MASK) (PAD BYTES 2)))
+(export '+atom--superscript-y+)
 
-(DEFINE-STRUCT TIMECOORD ((TIMESTAMP TIME) (INT16 X) (INT16 Y)))
+(defconstant +atom--superscript-y+ 48)
 
-(DEFINE-REQUEST GET-MOTION-EVENTS 39
- ((PAD BYTES 1) (WINDOW WINDOW) (TIMESTAMP START) (TIMESTAMP STOP))
- ((PAD BYTES 1) (CARD32 EVENTS-LEN) (PAD BYTES 20)
-  (LIST TIMECOORD EVENTS-LEN EVENTS)))
+(export '+atom--subscript-x+)
 
-(DEFINE-REQUEST TRANSLATE-COORDINATES 40
- ((PAD BYTES 1) (WINDOW SRC-WINDOW) (WINDOW DST-WINDOW) (INT16 SRC-X)
-  (INT16 SRC-Y))
- ((BOOL SAME-SCREEN) (WINDOW CHILD) (INT16 DST-X) (INT16 DST-Y)))
+(defconstant +atom--subscript-x+ 49)
 
-(DEFINE-REQUEST WARP-POINTER 41
- ((PAD BYTES 1) (WINDOW SRC-WINDOW) (WINDOW DST-WINDOW) (INT16 SRC-X)
-  (INT16 SRC-Y) (CARD16 SRC-WIDTH) (CARD16 SRC-HEIGHT) (INT16 DST-X)
-  (INT16 DST-Y))
- NIL)
+(export '+atom--subscript-y+)
 
-(PROGN (EXPORT '+INPUT-FOCUS--NONE+) (DEFCONSTANT +INPUT-FOCUS--NONE+ 0))
+(defconstant +atom--subscript-y+ 50)
 
-(PROGN
- (EXPORT '+INPUT-FOCUS--POINTER-ROOT+)
- (DEFCONSTANT +INPUT-FOCUS--POINTER-ROOT+ 1))
+(export '+atom--underline-position+)
 
-(PROGN (EXPORT '+INPUT-FOCUS--PARENT+) (DEFCONSTANT +INPUT-FOCUS--PARENT+ 2))
+(defconstant +atom--underline-position+ 51)
 
-(PROGN
- (EXPORT '+INPUT-FOCUS--FOLLOW-KEYBOARD+)
- (DEFCONSTANT +INPUT-FOCUS--FOLLOW-KEYBOARD+ 3))
+(export '+atom--underline-thickness+)
 
-(DEFINE-REQUEST SET-INPUT-FOCUS 42
- ((CARD8 REVERT-TO) (WINDOW FOCUS) (TIMESTAMP TIME)) NIL)
+(defconstant +atom--underline-thickness+ 52)
 
-(DEFINE-REQUEST GET-INPUT-FOCUS 43 NIL ((CARD8 REVERT-TO) (WINDOW FOCUS)))
+(export '+atom--strikeout-ascent+)
 
-(DEFINE-REQUEST QUERY-KEYMAP 44 NIL ((PAD BYTES 1) (LIST CARD8 32 KEYS)))
+(defconstant +atom--strikeout-ascent+ 53)
 
-(DEFINE-REQUEST OPEN-FONT 45
- ((PAD BYTES 1) (FONT FID) (CARD16 NAME-LEN) (PAD BYTES 2)
-  (LIST CHAR NAME-LEN NAME))
- NIL)
+(export '+atom--strikeout-descent+)
 
-(DEFINE-REQUEST CLOSE-FONT 46 ((PAD BYTES 1) (FONT FONT)) NIL)
+(defconstant +atom--strikeout-descent+ 54)
 
-(PROGN
- (EXPORT '+FONT-DRAW--LEFT-TO-RIGHT+)
- (DEFCONSTANT +FONT-DRAW--LEFT-TO-RIGHT+ 0))
+(export '+atom--italic-angle+)
 
-(PROGN
- (EXPORT '+FONT-DRAW--RIGHT-TO-LEFT+)
- (DEFCONSTANT +FONT-DRAW--RIGHT-TO-LEFT+ 1))
+(defconstant +atom--italic-angle+ 55)
 
-(DEFINE-STRUCT FONTPROP ((ATOM NAME) (CARD32 VALUE)))
+(export '+atom--x-height+)
 
-(DEFINE-STRUCT CHARINFO
- ((INT16 LEFT-SIDE-BEARING) (INT16 RIGHT-SIDE-BEARING) (INT16 CHARACTER-WIDTH)
-  (INT16 ASCENT) (INT16 DESCENT) (CARD16 ATTRIBUTES)))
+(defconstant +atom--x-height+ 56)
 
-(DEFINE-REQUEST QUERY-FONT 47 ((PAD BYTES 1) (FONTABLE FONT))
- ((PAD BYTES 1) (CHARINFO MIN-BOUNDS) (PAD BYTES 4) (CHARINFO MAX-BOUNDS)
-  (PAD BYTES 4) (CARD16 MIN-CHAR-OR-BYTE2) (CARD16 MAX-CHAR-OR-BYTE2)
-  (CARD16 DEFAULT-CHAR) (CARD16 PROPERTIES-LEN) (BYTE DRAW-DIRECTION)
-  (CARD8 MIN-BYTE1) (CARD8 MAX-BYTE1) (BOOL ALL-CHARS-EXIST)
-  (INT16 FONT-ASCENT) (INT16 FONT-DESCENT) (CARD32 CHAR-INFOS-LEN)
-  (LIST FONTPROP PROPERTIES-LEN PROPERTIES)
-  (LIST CHARINFO CHAR-INFOS-LEN CHAR-INFOS)))
+(export '+atom--quad-width+)
 
-(DEFINE-REQUEST QUERY-TEXT-EXTENTS 48
- ((AUX (BOOL ODD-LENGTH) (LOGAND STRING-LEN 1)) (FONTABLE FONT)
-  (LIST CHAR2B NIL STRING))
- ((BYTE DRAW-DIRECTION) (INT16 FONT-ASCENT) (INT16 FONT-DESCENT)
-  (INT16 OVERALL-ASCENT) (INT16 OVERALL-DESCENT) (INT32 OVERALL-WIDTH)
-  (INT32 OVERALL-LEFT) (INT32 OVERALL-RIGHT)))
+(defconstant +atom--quad-width+ 57)
 
-(DEFINE-STRUCT STR ((CARD8 NAME-LEN) (LIST CHAR NAME-LEN NAME)))
+(export '+atom--weight+)
 
-(DEFINE-REQUEST LIST-FONTS 49
- ((PAD BYTES 1) (CARD16 MAX-NAMES) (CARD16 PATTERN-LEN)
-  (LIST CHAR PATTERN-LEN PATTERN))
- ((PAD BYTES 1) (CARD16 NAMES-LEN) (PAD BYTES 22) (LIST STR NAMES-LEN NAMES)))
+(defconstant +atom--weight+ 58)
 
-(DEFINE-REQUEST LIST-FONTS-WITH-INFO 50
- ((PAD BYTES 1) (CARD16 MAX-NAMES) (CARD16 PATTERN-LEN)
-  (LIST CHAR PATTERN-LEN PATTERN))
- ((CARD8 NAME-LEN) (CHARINFO MIN-BOUNDS) (PAD BYTES 4) (CHARINFO MAX-BOUNDS)
-  (PAD BYTES 4) (CARD16 MIN-CHAR-OR-BYTE2) (CARD16 MAX-CHAR-OR-BYTE2)
-  (CARD16 DEFAULT-CHAR) (CARD16 PROPERTIES-LEN) (BYTE DRAW-DIRECTION)
-  (CARD8 MIN-BYTE1) (CARD8 MAX-BYTE1) (BOOL ALL-CHARS-EXIST)
-  (INT16 FONT-ASCENT) (INT16 FONT-DESCENT) (CARD32 REPLIES-HINT)
-  (LIST FONTPROP PROPERTIES-LEN PROPERTIES) (LIST CHAR NAME-LEN NAME)))
+(export '+atom--point-size+)
 
-(DEFINE-REQUEST SET-FONT-PATH 51
- ((PAD BYTES 1) (CARD16 FONT-QTY) (PAD BYTES 2) (LIST STR FONT-QTY FONT)) NIL)
+(defconstant +atom--point-size+ 59)
 
-(DEFINE-REQUEST GET-FONT-PATH 52 NIL
- ((PAD BYTES 1) (CARD16 PATH-LEN) (PAD BYTES 22) (LIST STR PATH-LEN PATH)))
+(export '+atom--resolution+)
 
-(DEFINE-REQUEST CREATE-PIXMAP 53
- ((CARD8 DEPTH) (PIXMAP PID) (DRAWABLE DRAWABLE) (CARD16 WIDTH)
-  (CARD16 HEIGHT))
- NIL)
+(defconstant +atom--resolution+ 60)
 
-(DEFINE-REQUEST FREE-PIXMAP 54 ((PAD BYTES 1) (PIXMAP PIXMAP)) NIL)
+(export '+atom--copyright+)
 
-(PROGN (EXPORT '+GC--FUNCTION+) (DEFCONSTANT +GC--FUNCTION+ 0))
+(defconstant +atom--copyright+ 61)
 
-(PROGN (EXPORT '+GC--PLANE-MASK+) (DEFCONSTANT +GC--PLANE-MASK+ 1))
+(export '+atom--notice+)
 
-(PROGN (EXPORT '+GC--FOREGROUND+) (DEFCONSTANT +GC--FOREGROUND+ 2))
+(defconstant +atom--notice+ 62)
 
-(PROGN (EXPORT '+GC--BACKGROUND+) (DEFCONSTANT +GC--BACKGROUND+ 3))
+(export '+atom--font-name+)
 
-(PROGN (EXPORT '+GC--LINE-WIDTH+) (DEFCONSTANT +GC--LINE-WIDTH+ 4))
+(defconstant +atom--font-name+ 63)
 
-(PROGN (EXPORT '+GC--LINE-STYLE+) (DEFCONSTANT +GC--LINE-STYLE+ 5))
+(export '+atom--family-name+)
 
-(PROGN (EXPORT '+GC--CAP-STYLE+) (DEFCONSTANT +GC--CAP-STYLE+ 6))
+(defconstant +atom--family-name+ 64)
 
-(PROGN (EXPORT '+GC--JOIN-STYLE+) (DEFCONSTANT +GC--JOIN-STYLE+ 7))
+(export '+atom--full-name+)
 
-(PROGN (EXPORT '+GC--FILL-STYLE+) (DEFCONSTANT +GC--FILL-STYLE+ 8))
+(defconstant +atom--full-name+ 65)
 
-(PROGN (EXPORT '+GC--FILL-RULE+) (DEFCONSTANT +GC--FILL-RULE+ 9))
+(export '+atom--cap-height+)
 
-(PROGN (EXPORT '+GC--TILE+) (DEFCONSTANT +GC--TILE+ 10))
+(defconstant +atom--cap-height+ 66)
 
-(PROGN (EXPORT '+GC--STIPPLE+) (DEFCONSTANT +GC--STIPPLE+ 11))
+(export '+atom--wm-class+)
 
-(PROGN
- (EXPORT '+GC--TILE-STIPPLE-ORIGIN-X+)
- (DEFCONSTANT +GC--TILE-STIPPLE-ORIGIN-X+ 12))
+(defconstant +atom--wm-class+ 67)
 
-(PROGN
- (EXPORT '+GC--TILE-STIPPLE-ORIGIN-Y+)
- (DEFCONSTANT +GC--TILE-STIPPLE-ORIGIN-Y+ 13))
+(export '+atom--wm-transient-for+)
 
-(PROGN (EXPORT '+GC--FONT+) (DEFCONSTANT +GC--FONT+ 14))
+(defconstant +atom--wm-transient-for+ 68)
 
-(PROGN (EXPORT '+GC--SUBWINDOW-MODE+) (DEFCONSTANT +GC--SUBWINDOW-MODE+ 15))
+(define-event selection-request 30
+ ((pad bytes 1) (timestamp time) (window owner) (window requestor)
+  (atom selection) (atom target) (atom property)))
 
-(PROGN
- (EXPORT '+GC--GRAPHICS-EXPOSURES+)
- (DEFCONSTANT +GC--GRAPHICS-EXPOSURES+ 16))
+(define-event selection-notify 31
+ ((pad bytes 1) (timestamp time) (window requestor) (atom selection)
+  (atom target) (atom property)))
 
-(PROGN (EXPORT '+GC--CLIP-ORIGIN-X+) (DEFCONSTANT +GC--CLIP-ORIGIN-X+ 17))
+(export '+colormap-state--uninstalled+)
 
-(PROGN (EXPORT '+GC--CLIP-ORIGIN-Y+) (DEFCONSTANT +GC--CLIP-ORIGIN-Y+ 18))
+(defconstant +colormap-state--uninstalled+ 0)
 
-(PROGN (EXPORT '+GC--CLIP-MASK+) (DEFCONSTANT +GC--CLIP-MASK+ 19))
+(export '+colormap-state--installed+)
 
-(PROGN (EXPORT '+GC--DASH-OFFSET+) (DEFCONSTANT +GC--DASH-OFFSET+ 20))
+(defconstant +colormap-state--installed+ 1)
 
-(PROGN (EXPORT '+GC--DASH-LIST+) (DEFCONSTANT +GC--DASH-LIST+ 21))
+(export '+colormap--none+)
 
-(PROGN (EXPORT '+GC--ARC-MODE+) (DEFCONSTANT +GC--ARC-MODE+ 22))
+(defconstant +colormap--none+ 0)
 
-(PROGN (EXPORT '+GX--CLEAR+) (DEFCONSTANT +GX--CLEAR+ 0))
+(define-event colormap-notify 32
+ ((pad bytes 1) (window window) (colormap colormap) (bool new) (byte state)
+  (pad bytes 2)))
 
-(PROGN (EXPORT '+GX--AND+) (DEFCONSTANT +GX--AND+ 1))
+(define-event client-message 33
+ ((card8 format) (window window) (atom type) (() data)))
 
-(PROGN (EXPORT '+GX--AND-REVERSE+) (DEFCONSTANT +GX--AND-REVERSE+ 2))
+(export '+mapping--modifier+)
 
-(PROGN (EXPORT '+GX--COPY+) (DEFCONSTANT +GX--COPY+ 3))
+(defconstant +mapping--modifier+ 0)
 
-(PROGN (EXPORT '+GX--AND-INVERTED+) (DEFCONSTANT +GX--AND-INVERTED+ 4))
+(export '+mapping--keyboard+)
 
-(PROGN (EXPORT '+GX--NOOP+) (DEFCONSTANT +GX--NOOP+ 5))
+(defconstant +mapping--keyboard+ 1)
 
-(PROGN (EXPORT '+GX--XOR+) (DEFCONSTANT +GX--XOR+ 6))
+(export '+mapping--pointer+)
 
-(PROGN (EXPORT '+GX--OR+) (DEFCONSTANT +GX--OR+ 7))
+(defconstant +mapping--pointer+ 2)
 
-(PROGN (EXPORT '+GX--NOR+) (DEFCONSTANT +GX--NOR+ 8))
+(define-event mapping-notify 34
+ ((pad bytes 1) (byte request) (keycode first-keycode) (card8 count)
+  (pad bytes 1)))
 
-(PROGN (EXPORT '+GX--EQUIV+) (DEFCONSTANT +GX--EQUIV+ 9))
+(define-event ge-generic 35 ((pad bytes 22)))
 
-(PROGN (EXPORT '+GX--INVERT+) (DEFCONSTANT +GX--INVERT+ 10))
+(define-error request 1)
 
-(PROGN (EXPORT '+GX--OR-REVERSE+) (DEFCONSTANT +GX--OR-REVERSE+ 11))
+(define-error value 2)
 
-(PROGN (EXPORT '+GX--COPY-INVERTED+) (DEFCONSTANT +GX--COPY-INVERTED+ 12))
+(define-error window 3)
 
-(PROGN (EXPORT '+GX--OR-INVERTED+) (DEFCONSTANT +GX--OR-INVERTED+ 13))
+(define-error pixmap 4)
 
-(PROGN (EXPORT '+GX--NAND+) (DEFCONSTANT +GX--NAND+ 14))
+(define-error atom 5)
 
-(PROGN (EXPORT '+GX--SET+) (DEFCONSTANT +GX--SET+ 15))
+(define-error cursor 6)
 
-(PROGN (EXPORT '+LINE-STYLE--SOLID+) (DEFCONSTANT +LINE-STYLE--SOLID+ 0))
+(define-error font 7)
 
-(PROGN
- (EXPORT '+LINE-STYLE--ON-OFF-DASH+)
- (DEFCONSTANT +LINE-STYLE--ON-OFF-DASH+ 1))
+(define-error match 8)
 
-(PROGN
- (EXPORT '+LINE-STYLE--DOUBLE-DASH+)
- (DEFCONSTANT +LINE-STYLE--DOUBLE-DASH+ 2))
+(define-error drawable 9)
 
-(PROGN (EXPORT '+CAP-STYLE--NOT-LAST+) (DEFCONSTANT +CAP-STYLE--NOT-LAST+ 0))
+(define-error access 10)
 
-(PROGN (EXPORT '+CAP-STYLE--BUTT+) (DEFCONSTANT +CAP-STYLE--BUTT+ 1))
+(define-error alloc 11)
 
-(PROGN (EXPORT '+CAP-STYLE--ROUND+) (DEFCONSTANT +CAP-STYLE--ROUND+ 2))
+(define-error colormap 12)
 
-(PROGN
- (EXPORT '+CAP-STYLE--PROJECTING+)
- (DEFCONSTANT +CAP-STYLE--PROJECTING+ 3))
+(define-error gcontext 13)
 
-(PROGN (EXPORT '+JOIN-STYLE--MITER+) (DEFCONSTANT +JOIN-STYLE--MITER+ 0))
+(define-error idchoice 14)
 
-(PROGN (EXPORT '+JOIN-STYLE--ROUND+) (DEFCONSTANT +JOIN-STYLE--ROUND+ 1))
+(define-error name 15)
 
-(PROGN (EXPORT '+JOIN-STYLE--BEVEL+) (DEFCONSTANT +JOIN-STYLE--BEVEL+ 2))
+(define-error length 16)
 
-(PROGN (EXPORT '+FILL-STYLE--SOLID+) (DEFCONSTANT +FILL-STYLE--SOLID+ 0))
+(define-error implementation 17)
 
-(PROGN (EXPORT '+FILL-STYLE--TILED+) (DEFCONSTANT +FILL-STYLE--TILED+ 1))
+(export '+window-class--copy-from-parent+)
 
-(PROGN (EXPORT '+FILL-STYLE--STIPPLED+) (DEFCONSTANT +FILL-STYLE--STIPPLED+ 2))
+(defconstant +window-class--copy-from-parent+ 0)
 
-(PROGN
- (EXPORT '+FILL-STYLE--OPAQUE-STIPPLED+)
- (DEFCONSTANT +FILL-STYLE--OPAQUE-STIPPLED+ 3))
+(export '+window-class--input-output+)
 
-(PROGN (EXPORT '+FILL-RULE--EVEN-ODD+) (DEFCONSTANT +FILL-RULE--EVEN-ODD+ 0))
+(defconstant +window-class--input-output+ 1)
 
-(PROGN (EXPORT '+FILL-RULE--WINDING+) (DEFCONSTANT +FILL-RULE--WINDING+ 1))
+(export '+window-class--input-only+)
 
-(PROGN
- (EXPORT '+SUBWINDOW-MODE--CLIP-BY-CHILDREN+)
- (DEFCONSTANT +SUBWINDOW-MODE--CLIP-BY-CHILDREN+ 0))
+(defconstant +window-class--input-only+ 2)
 
-(PROGN
- (EXPORT '+SUBWINDOW-MODE--INCLUDE-INFERIORS+)
- (DEFCONSTANT +SUBWINDOW-MODE--INCLUDE-INFERIORS+ 1))
+(export '+cw--back-pixmap+)
 
-(PROGN (EXPORT '+ARC-MODE--CHORD+) (DEFCONSTANT +ARC-MODE--CHORD+ 0))
+(defconstant +cw--back-pixmap+ 0)
 
-(PROGN (EXPORT '+ARC-MODE--PIE-SLICE+) (DEFCONSTANT +ARC-MODE--PIE-SLICE+ 1))
+(export '+cw--back-pixel+)
 
-(DEFINE-REQUEST CREATE-GC 55
- ((PAD BYTES 1) (GCONTEXT CID) (DRAWABLE DRAWABLE) (CARD32 VALUE-MASK)
-  (BITCASE VALUE-MASK (+GC--FUNCTION+ (CARD32 FUNCTION))
-   (+GC--PLANE-MASK+ (CARD32 PLANE-MASK))
-   (+GC--FOREGROUND+ (CARD32 FOREGROUND))
-   (+GC--BACKGROUND+ (CARD32 BACKGROUND))
-   (+GC--LINE-WIDTH+ (CARD32 LINE-WIDTH))
-   (+GC--LINE-STYLE+ (CARD32 LINE-STYLE)) (+GC--CAP-STYLE+ (CARD32 CAP-STYLE))
-   (+GC--JOIN-STYLE+ (CARD32 JOIN-STYLE))
-   (+GC--FILL-STYLE+ (CARD32 FILL-STYLE)) (+GC--FILL-RULE+ (CARD32 FILL-RULE))
-   (+GC--TILE+ (PIXMAP TILE)) (+GC--STIPPLE+ (PIXMAP STIPPLE))
-   (+GC--TILE-STIPPLE-ORIGIN-X+ (INT32 TILE-STIPPLE-X-ORIGIN))
-   (+GC--TILE-STIPPLE-ORIGIN-Y+ (INT32 TILE-STIPPLE-Y-ORIGIN))
-   (+GC--FONT+ (FONT FONT)) (+GC--SUBWINDOW-MODE+ (CARD32 SUBWINDOW-MODE))
-   (+GC--GRAPHICS-EXPOSURES+ (BOOL32 GRAPHICS-EXPOSURES))
-   (+GC--CLIP-ORIGIN-X+ (INT32 CLIP-X-ORIGIN))
-   (+GC--CLIP-ORIGIN-Y+ (INT32 CLIP-Y-ORIGIN))
-   (+GC--CLIP-MASK+ (PIXMAP CLIP-MASK))
-   (+GC--DASH-OFFSET+ (CARD32 DASH-OFFSET)) (+GC--DASH-LIST+ (CARD32 DASHES))
-   (+GC--ARC-MODE+ (CARD32 ARC-MODE))))
- NIL)
+(defconstant +cw--back-pixel+ 1)
 
-(DEFINE-REQUEST CHANGE-GC 56
- ((PAD BYTES 1) (GCONTEXT GC) (CARD32 VALUE-MASK)
-  (BITCASE VALUE-MASK (+GC--FUNCTION+ (CARD32 FUNCTION))
-   (+GC--PLANE-MASK+ (CARD32 PLANE-MASK))
-   (+GC--FOREGROUND+ (CARD32 FOREGROUND))
-   (+GC--BACKGROUND+ (CARD32 BACKGROUND))
-   (+GC--LINE-WIDTH+ (CARD32 LINE-WIDTH))
-   (+GC--LINE-STYLE+ (CARD32 LINE-STYLE)) (+GC--CAP-STYLE+ (CARD32 CAP-STYLE))
-   (+GC--JOIN-STYLE+ (CARD32 JOIN-STYLE))
-   (+GC--FILL-STYLE+ (CARD32 FILL-STYLE)) (+GC--FILL-RULE+ (CARD32 FILL-RULE))
-   (+GC--TILE+ (PIXMAP TILE)) (+GC--STIPPLE+ (PIXMAP STIPPLE))
-   (+GC--TILE-STIPPLE-ORIGIN-X+ (INT32 TILE-STIPPLE-X-ORIGIN))
-   (+GC--TILE-STIPPLE-ORIGIN-Y+ (INT32 TILE-STIPPLE-Y-ORIGIN))
-   (+GC--FONT+ (FONT FONT)) (+GC--SUBWINDOW-MODE+ (CARD32 SUBWINDOW-MODE))
-   (+GC--GRAPHICS-EXPOSURES+ (BOOL32 GRAPHICS-EXPOSURES))
-   (+GC--CLIP-ORIGIN-X+ (INT32 CLIP-X-ORIGIN))
-   (+GC--CLIP-ORIGIN-Y+ (INT32 CLIP-Y-ORIGIN))
-   (+GC--CLIP-MASK+ (PIXMAP CLIP-MASK))
-   (+GC--DASH-OFFSET+ (CARD32 DASH-OFFSET)) (+GC--DASH-LIST+ (CARD32 DASHES))
-   (+GC--ARC-MODE+ (CARD32 ARC-MODE))))
- NIL)
+(export '+cw--border-pixmap+)
 
-(DEFINE-REQUEST COPY-GC 57
- ((PAD BYTES 1) (GCONTEXT SRC-GC) (GCONTEXT DST-GC) (CARD32 VALUE-MASK)) NIL)
+(defconstant +cw--border-pixmap+ 2)
 
-(DEFINE-REQUEST SET-DASHES 58
- ((PAD BYTES 1) (GCONTEXT GC) (CARD16 DASH-OFFSET) (CARD16 DASHES-LEN)
-  (LIST CARD8 DASHES-LEN DASHES))
- NIL)
+(export '+cw--border-pixel+)
 
-(PROGN
- (EXPORT '+CLIP-ORDERING--UNSORTED+)
- (DEFCONSTANT +CLIP-ORDERING--UNSORTED+ 0))
+(defconstant +cw--border-pixel+ 3)
 
-(PROGN
- (EXPORT '+CLIP-ORDERING--YSORTED+)
- (DEFCONSTANT +CLIP-ORDERING--YSORTED+ 1))
+(export '+cw--bit-gravity+)
 
-(PROGN
- (EXPORT '+CLIP-ORDERING--YXSORTED+)
- (DEFCONSTANT +CLIP-ORDERING--YXSORTED+ 2))
+(defconstant +cw--bit-gravity+ 4)
 
-(PROGN
- (EXPORT '+CLIP-ORDERING--YXBANDED+)
- (DEFCONSTANT +CLIP-ORDERING--YXBANDED+ 3))
+(export '+cw--win-gravity+)
 
-(DEFINE-REQUEST SET-CLIP-RECTANGLES 59
- ((BYTE ORDERING) (GCONTEXT GC) (INT16 CLIP-X-ORIGIN) (INT16 CLIP-Y-ORIGIN)
-  (LIST RECTANGLE NIL RECTANGLES))
- NIL)
+(defconstant +cw--win-gravity+ 5)
 
-(DEFINE-REQUEST FREE-GC 60 ((PAD BYTES 1) (GCONTEXT GC)) NIL)
+(export '+cw--backing-store+)
 
-(DEFINE-REQUEST CLEAR-AREA 61
- ((BOOL EXPOSURES) (WINDOW WINDOW) (INT16 X) (INT16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT))
- NIL)
+(defconstant +cw--backing-store+ 6)
 
-(DEFINE-REQUEST COPY-AREA 62
- ((PAD BYTES 1) (DRAWABLE SRC-DRAWABLE) (DRAWABLE DST-DRAWABLE) (GCONTEXT GC)
-  (INT16 SRC-X) (INT16 SRC-Y) (INT16 DST-X) (INT16 DST-Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT))
- NIL)
+(export '+cw--backing-planes+)
 
-(DEFINE-REQUEST COPY-PLANE 63
- ((PAD BYTES 1) (DRAWABLE SRC-DRAWABLE) (DRAWABLE DST-DRAWABLE) (GCONTEXT GC)
-  (INT16 SRC-X) (INT16 SRC-Y) (INT16 DST-X) (INT16 DST-Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD32 BIT-PLANE))
- NIL)
+(defconstant +cw--backing-planes+ 7)
 
-(PROGN (EXPORT '+COORD-MODE--ORIGIN+) (DEFCONSTANT +COORD-MODE--ORIGIN+ 0))
+(export '+cw--backing-pixel+)
 
-(PROGN (EXPORT '+COORD-MODE--PREVIOUS+) (DEFCONSTANT +COORD-MODE--PREVIOUS+ 1))
+(defconstant +cw--backing-pixel+ 8)
 
-(DEFINE-REQUEST POLY-POINT 64
- ((BYTE COORDINATE-MODE) (DRAWABLE DRAWABLE) (GCONTEXT GC)
-  (LIST POINT NIL POINTS))
- NIL)
+(export '+cw--override-redirect+)
 
-(DEFINE-REQUEST POLY-LINE 65
- ((BYTE COORDINATE-MODE) (DRAWABLE DRAWABLE) (GCONTEXT GC)
-  (LIST POINT NIL POINTS))
- NIL)
+(defconstant +cw--override-redirect+ 9)
 
-(DEFINE-STRUCT SEGMENT ((INT16 X1) (INT16 Y1) (INT16 X2) (INT16 Y2)))
+(export '+cw--save-under+)
 
-(DEFINE-REQUEST POLY-SEGMENT 66
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (LIST SEGMENT NIL SEGMENTS))
- NIL)
+(defconstant +cw--save-under+ 10)
 
-(DEFINE-REQUEST POLY-RECTANGLE 67
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC)
-  (LIST RECTANGLE NIL RECTANGLES))
- NIL)
+(export '+cw--event-mask+)
 
-(DEFINE-REQUEST POLY-ARC 68
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (LIST ARC NIL ARCS)) NIL)
+(defconstant +cw--event-mask+ 11)
 
-(PROGN (EXPORT '+POLY-SHAPE--COMPLEX+) (DEFCONSTANT +POLY-SHAPE--COMPLEX+ 0))
+(export '+cw--dont-propagate+)
 
-(PROGN
- (EXPORT '+POLY-SHAPE--NONCONVEX+)
- (DEFCONSTANT +POLY-SHAPE--NONCONVEX+ 1))
+(defconstant +cw--dont-propagate+ 12)
 
-(PROGN (EXPORT '+POLY-SHAPE--CONVEX+) (DEFCONSTANT +POLY-SHAPE--CONVEX+ 2))
+(export '+cw--colormap+)
 
-(DEFINE-REQUEST FILL-POLY 69
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (CARD8 SHAPE)
-  (CARD8 COORDINATE-MODE) (PAD BYTES 2) (LIST POINT NIL POINTS))
- NIL)
+(defconstant +cw--colormap+ 13)
 
-(DEFINE-REQUEST POLY-FILL-RECTANGLE 70
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC)
-  (LIST RECTANGLE NIL RECTANGLES))
- NIL)
+(export '+cw--cursor+)
 
-(DEFINE-REQUEST POLY-FILL-ARC 71
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (LIST ARC NIL ARCS)) NIL)
+(defconstant +cw--cursor+ 14)
 
-(PROGN
- (EXPORT '+IMAGE-FORMAT--XYBITMAP+)
- (DEFCONSTANT +IMAGE-FORMAT--XYBITMAP+ 0))
+(export '+back-pixmap--none+)
 
-(PROGN
- (EXPORT '+IMAGE-FORMAT--XYPIXMAP+)
- (DEFCONSTANT +IMAGE-FORMAT--XYPIXMAP+ 1))
+(defconstant +back-pixmap--none+ 0)
 
-(PROGN
- (EXPORT '+IMAGE-FORMAT--ZPIXMAP+)
- (DEFCONSTANT +IMAGE-FORMAT--ZPIXMAP+ 2))
+(export '+back-pixmap--parent-relative+)
 
-(DEFINE-REQUEST PUT-IMAGE 72
- ((CARD8 FORMAT) (DRAWABLE DRAWABLE) (GCONTEXT GC) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (INT16 DST-X) (INT16 DST-Y) (CARD8 LEFT-PAD) (CARD8 DEPTH)
-  (PAD BYTES 2) (LIST BYTE NIL DATA))
- NIL)
+(defconstant +back-pixmap--parent-relative+ 1)
 
-(DEFINE-REQUEST GET-IMAGE 73
- ((CARD8 FORMAT) (DRAWABLE DRAWABLE) (INT16 X) (INT16 Y) (CARD16 WIDTH)
-  (CARD16 HEIGHT) (CARD32 PLANE-MASK))
- ((CARD8 DEPTH) (VISUALID VISUAL) (PAD BYTES 20) (LIST BYTE (* LENGTH 4) DATA)))
+(export '+gravity--bit-forget+)
 
-(DEFINE-REQUEST POLY-TEXT8 74
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (INT16 X) (INT16 Y)
-  (LIST BYTE NIL ITEMS))
- NIL)
+(defconstant +gravity--bit-forget+ 0)
 
-(DEFINE-REQUEST POLY-TEXT16 75
- ((PAD BYTES 1) (DRAWABLE DRAWABLE) (GCONTEXT GC) (INT16 X) (INT16 Y)
-  (LIST BYTE NIL ITEMS))
- NIL)
+(export '+gravity--win-unmap+)
 
-(DEFINE-REQUEST IMAGE-TEXT8 76
- ((BYTE STRING-LEN) (DRAWABLE DRAWABLE) (GCONTEXT GC) (INT16 X) (INT16 Y)
-  (LIST CHAR STRING-LEN STRING))
- NIL)
+(defconstant +gravity--win-unmap+ 0)
 
-(DEFINE-REQUEST IMAGE-TEXT16 77
- ((BYTE STRING-LEN) (DRAWABLE DRAWABLE) (GCONTEXT GC) (INT16 X) (INT16 Y)
-  (LIST CHAR2B STRING-LEN STRING))
- NIL)
+(export '+gravity--north-west+)
 
-(PROGN (EXPORT '+COLORMAP-ALLOC--NONE+) (DEFCONSTANT +COLORMAP-ALLOC--NONE+ 0))
+(defconstant +gravity--north-west+ 1)
 
-(PROGN (EXPORT '+COLORMAP-ALLOC--ALL+) (DEFCONSTANT +COLORMAP-ALLOC--ALL+ 1))
+(export '+gravity--north+)
 
-(DEFINE-REQUEST CREATE-COLORMAP 78
- ((BYTE ALLOC) (COLORMAP MID) (WINDOW WINDOW) (VISUALID VISUAL)) NIL)
+(defconstant +gravity--north+ 2)
 
-(DEFINE-REQUEST FREE-COLORMAP 79 ((PAD BYTES 1) (COLORMAP CMAP)) NIL)
+(export '+gravity--north-east+)
 
-(DEFINE-REQUEST COPY-COLORMAP-AND-FREE 80
- ((PAD BYTES 1) (COLORMAP MID) (COLORMAP SRC-CMAP)) NIL)
+(defconstant +gravity--north-east+ 3)
 
-(DEFINE-REQUEST INSTALL-COLORMAP 81 ((PAD BYTES 1) (COLORMAP CMAP)) NIL)
+(export '+gravity--west+)
 
-(DEFINE-REQUEST UNINSTALL-COLORMAP 82 ((PAD BYTES 1) (COLORMAP CMAP)) NIL)
+(defconstant +gravity--west+ 4)
 
-(DEFINE-REQUEST LIST-INSTALLED-COLORMAPS 83 ((PAD BYTES 1) (WINDOW WINDOW))
- ((PAD BYTES 1) (CARD16 CMAPS-LEN) (PAD BYTES 22)
-  (LIST COLORMAP CMAPS-LEN CMAPS)))
+(export '+gravity--center+)
 
-(DEFINE-REQUEST ALLOC-COLOR 84
- ((PAD BYTES 1) (COLORMAP CMAP) (CARD16 RED) (CARD16 GREEN) (CARD16 BLUE)
-  (PAD BYTES 2))
- ((PAD BYTES 1) (CARD16 RED) (CARD16 GREEN) (CARD16 BLUE) (PAD BYTES 2)
-  (CARD32 PIXEL)))
+(defconstant +gravity--center+ 5)
 
-(DEFINE-REQUEST ALLOC-NAMED-COLOR 85
- ((PAD BYTES 1) (COLORMAP CMAP) (CARD16 NAME-LEN) (PAD BYTES 2)
-  (LIST CHAR NAME-LEN NAME))
- ((PAD BYTES 1) (CARD32 PIXEL) (CARD16 EXACT-RED) (CARD16 EXACT-GREEN)
-  (CARD16 EXACT-BLUE) (CARD16 VISUAL-RED) (CARD16 VISUAL-GREEN)
-  (CARD16 VISUAL-BLUE)))
+(export '+gravity--east+)
 
-(DEFINE-REQUEST ALLOC-COLOR-CELLS 86
- ((BOOL CONTIGUOUS) (COLORMAP CMAP) (CARD16 COLORS) (CARD16 PLANES))
- ((PAD BYTES 1) (CARD16 PIXELS-LEN) (CARD16 MASKS-LEN) (PAD BYTES 20)
-  (LIST CARD32 PIXELS-LEN PIXELS) (LIST CARD32 MASKS-LEN MASKS)))
+(defconstant +gravity--east+ 6)
 
-(DEFINE-REQUEST ALLOC-COLOR-PLANES 87
- ((BOOL CONTIGUOUS) (COLORMAP CMAP) (CARD16 COLORS) (CARD16 REDS)
-  (CARD16 GREENS) (CARD16 BLUES))
- ((PAD BYTES 1) (CARD16 PIXELS-LEN) (PAD BYTES 2) (CARD32 RED-MASK)
-  (CARD32 GREEN-MASK) (CARD32 BLUE-MASK) (PAD BYTES 8)
-  (LIST CARD32 PIXELS-LEN PIXELS)))
+(export '+gravity--south-west+)
 
-(DEFINE-REQUEST FREE-COLORS 88
- ((PAD BYTES 1) (COLORMAP CMAP) (CARD32 PLANE-MASK) (LIST CARD32 NIL PIXELS))
- NIL)
+(defconstant +gravity--south-west+ 7)
 
-(PROGN (EXPORT '+COLOR-FLAG--RED+) (DEFCONSTANT +COLOR-FLAG--RED+ 0))
+(export '+gravity--south+)
 
-(PROGN (EXPORT '+COLOR-FLAG--GREEN+) (DEFCONSTANT +COLOR-FLAG--GREEN+ 1))
+(defconstant +gravity--south+ 8)
 
-(PROGN (EXPORT '+COLOR-FLAG--BLUE+) (DEFCONSTANT +COLOR-FLAG--BLUE+ 2))
+(export '+gravity--south-east+)
 
-(DEFINE-STRUCT COLORITEM
- ((CARD32 PIXEL) (CARD16 RED) (CARD16 GREEN) (CARD16 BLUE) (BYTE FLAGS)
-  (PAD BYTES 1)))
+(defconstant +gravity--south-east+ 9)
 
-(DEFINE-REQUEST STORE-COLORS 89
- ((PAD BYTES 1) (COLORMAP CMAP) (LIST COLORITEM NIL ITEMS)) NIL)
+(export '+gravity--static+)
 
-(DEFINE-REQUEST STORE-NAMED-COLOR 90
- ((CARD8 FLAGS) (COLORMAP CMAP) (CARD32 PIXEL) (CARD16 NAME-LEN) (PAD BYTES 2)
-  (LIST CHAR NAME-LEN NAME))
- NIL)
+(defconstant +gravity--static+ 10)
 
-(DEFINE-STRUCT RGB ((CARD16 RED) (CARD16 GREEN) (CARD16 BLUE) (PAD BYTES 2)))
+(define-request create-window 1
+ ((card8 depth) (window wid) (window parent) (int16 x) (int16 y) (card16 width)
+  (card16 height) (card16 border-width) (card16 class) (visualid visual)
+  (card32 value-mask)
+  (bitcase value-mask () ((+cw--back-pixmap+) ((pixmap background-pixmap)))
+   ((+cw--back-pixel+) ((card32 background-pixel)))
+   ((+cw--border-pixmap+) ((pixmap border-pixmap)))
+   ((+cw--border-pixel+) ((card32 border-pixel)))
+   ((+cw--bit-gravity+) ((card32 bit-gravity)))
+   ((+cw--win-gravity+) ((card32 win-gravity)))
+   ((+cw--backing-store+) ((card32 backing-store)))
+   ((+cw--backing-planes+) ((card32 backing-planes)))
+   ((+cw--backing-pixel+) ((card32 backing-pixel)))
+   ((+cw--override-redirect+) ((bool32 override-redirect)))
+   ((+cw--save-under+) ((bool32 save-under)))
+   ((+cw--event-mask+) ((card32 event-mask)))
+   ((+cw--dont-propagate+) ((card32 do-not-propogate-mask)))
+   ((+cw--colormap+) ((colormap colormap)))
+   ((+cw--cursor+) ((cursor cursor)))))
+ ())
 
-(DEFINE-REQUEST QUERY-COLORS 91
- ((PAD BYTES 1) (COLORMAP CMAP) (LIST CARD32 NIL PIXELS))
- ((PAD BYTES 1) (CARD16 COLORS-LEN) (PAD BYTES 22)
-  (LIST RGB COLORS-LEN COLORS)))
+(define-request change-window-attributes 2
+ ((pad bytes 1) (window window) (card32 value-mask)
+  (bitcase value-mask () ((+cw--back-pixmap+) ((pixmap background-pixmap)))
+   ((+cw--back-pixel+) ((card32 background-pixel)))
+   ((+cw--border-pixmap+) ((pixmap border-pixmap)))
+   ((+cw--border-pixel+) ((card32 border-pixel)))
+   ((+cw--bit-gravity+) ((card32 bit-gravity)))
+   ((+cw--win-gravity+) ((card32 win-gravity)))
+   ((+cw--backing-store+) ((card32 backing-store)))
+   ((+cw--backing-planes+) ((card32 backing-planes)))
+   ((+cw--backing-pixel+) ((card32 backing-pixel)))
+   ((+cw--override-redirect+) ((bool32 override-redirect)))
+   ((+cw--save-under+) ((bool32 save-under)))
+   ((+cw--event-mask+) ((card32 event-mask)))
+   ((+cw--dont-propagate+) ((card32 do-not-propogate-mask)))
+   ((+cw--colormap+) ((colormap colormap)))
+   ((+cw--cursor+) ((cursor cursor)))))
+ ())
 
-(DEFINE-REQUEST LOOKUP-COLOR 92
- ((PAD BYTES 1) (COLORMAP CMAP) (CARD16 NAME-LEN) (PAD BYTES 2)
-  (LIST CHAR NAME-LEN NAME))
- ((PAD BYTES 1) (CARD16 EXACT-RED) (CARD16 EXACT-GREEN) (CARD16 EXACT-BLUE)
-  (CARD16 VISUAL-RED) (CARD16 VISUAL-GREEN) (CARD16 VISUAL-BLUE)))
+(export '+map-state--unmapped+)
 
-(PROGN (EXPORT '+PIXMAP--NONE+) (DEFCONSTANT +PIXMAP--NONE+ 0))
+(defconstant +map-state--unmapped+ 0)
 
-(DEFINE-REQUEST CREATE-CURSOR 93
- ((PAD BYTES 1) (CURSOR CID) (PIXMAP SOURCE) (PIXMAP MASK) (CARD16 FORE-RED)
-  (CARD16 FORE-GREEN) (CARD16 FORE-BLUE) (CARD16 BACK-RED) (CARD16 BACK-GREEN)
-  (CARD16 BACK-BLUE) (CARD16 X) (CARD16 Y))
- NIL)
+(export '+map-state--unviewable+)
 
-(PROGN (EXPORT '+FONT--NONE+) (DEFCONSTANT +FONT--NONE+ 0))
+(defconstant +map-state--unviewable+ 1)
 
-(DEFINE-REQUEST CREATE-GLYPH-CURSOR 94
- ((PAD BYTES 1) (CURSOR CID) (FONT SOURCE-FONT) (FONT MASK-FONT)
-  (CARD16 SOURCE-CHAR) (CARD16 MASK-CHAR) (CARD16 FORE-RED) (CARD16 FORE-GREEN)
-  (CARD16 FORE-BLUE) (CARD16 BACK-RED) (CARD16 BACK-GREEN) (CARD16 BACK-BLUE))
- NIL)
+(export '+map-state--viewable+)
 
-(DEFINE-REQUEST FREE-CURSOR 95 ((PAD BYTES 1) (CURSOR CURSOR)) NIL)
+(defconstant +map-state--viewable+ 2)
 
-(DEFINE-REQUEST RECOLOR-CURSOR 96
- ((PAD BYTES 1) (CURSOR CURSOR) (CARD16 FORE-RED) (CARD16 FORE-GREEN)
-  (CARD16 FORE-BLUE) (CARD16 BACK-RED) (CARD16 BACK-GREEN) (CARD16 BACK-BLUE))
- NIL)
+(define-request get-window-attributes 3 ((pad bytes 1) (window window))
+ ((card8 backing-store) (visualid visual) (card16 class) (card8 bit-gravity)
+  (card8 win-gravity) (card32 backing-planes) (card32 backing-pixel)
+  (bool save-under) (bool map-is-installed) (card8 map-state)
+  (bool override-redirect) (colormap colormap) (card32 all-event-masks)
+  (card32 your-event-mask) (card16 do-not-propagate-mask) (pad bytes 2)))
 
-(PROGN
- (EXPORT '+QUERY-SHAPE-OF--LARGEST-CURSOR+)
- (DEFCONSTANT +QUERY-SHAPE-OF--LARGEST-CURSOR+ 0))
+(define-request destroy-window 4 ((pad bytes 1) (window window)) ())
 
-(PROGN
- (EXPORT '+QUERY-SHAPE-OF--FASTEST-TILE+)
- (DEFCONSTANT +QUERY-SHAPE-OF--FASTEST-TILE+ 1))
+(define-request destroy-subwindows 5 ((pad bytes 1) (window window)) ())
 
-(PROGN
- (EXPORT '+QUERY-SHAPE-OF--FASTEST-STIPPLE+)
- (DEFCONSTANT +QUERY-SHAPE-OF--FASTEST-STIPPLE+ 2))
+(export '+set-mode--insert+)
 
-(DEFINE-REQUEST QUERY-BEST-SIZE 97
- ((CARD8 CLASS) (DRAWABLE DRAWABLE) (CARD16 WIDTH) (CARD16 HEIGHT))
- ((PAD BYTES 1) (CARD16 WIDTH) (CARD16 HEIGHT)))
+(defconstant +set-mode--insert+ 0)
 
-(DEFINE-REQUEST QUERY-EXTENSION 98
- ((PAD BYTES 1) (CARD16 NAME-LEN) (PAD BYTES 2) (LIST CHAR NAME-LEN NAME))
- ((PAD BYTES 1) (BOOL PRESENT) (CARD8 MAJOR-OPCODE) (CARD8 FIRST-EVENT)
-  (CARD8 FIRST-ERROR)))
+(export '+set-mode--delete+)
 
-(DEFINE-REQUEST LIST-EXTENSIONS 99 NIL
- ((CARD8 NAMES-LEN) (PAD BYTES 24) (LIST STR NAMES-LEN NAMES)))
+(defconstant +set-mode--delete+ 1)
 
-(DEFINE-REQUEST CHANGE-KEYBOARD-MAPPING 100
- ((CARD8 KEYCODE-COUNT) (KEYCODE FIRST-KEYCODE) (CARD8 KEYSYMS-PER-KEYCODE)
-  (PAD BYTES 2) (LIST KEYSYM (* KEYCODE-COUNT KEYSYMS-PER-KEYCODE) KEYSYMS))
- NIL)
+(define-request change-save-set 6 ((byte mode) (window window)) ())
 
-(DEFINE-REQUEST GET-KEYBOARD-MAPPING 101
- ((PAD BYTES 1) (KEYCODE FIRST-KEYCODE) (CARD8 COUNT))
- ((BYTE KEYSYMS-PER-KEYCODE) (PAD BYTES 24) (LIST KEYSYM LENGTH KEYSYMS)))
+(define-request reparent-window 7
+ ((pad bytes 1) (window window) (window parent) (int16 x) (int16 y)) ())
 
-(PROGN
- (EXPORT '+KB--KEY-CLICK-PERCENT+)
- (DEFCONSTANT +KB--KEY-CLICK-PERCENT+ 0))
+(define-request map-window 8 ((pad bytes 1) (window window)) ())
 
-(PROGN (EXPORT '+KB--BELL-PERCENT+) (DEFCONSTANT +KB--BELL-PERCENT+ 1))
+(define-request map-subwindows 9 ((pad bytes 1) (window window)) ())
 
-(PROGN (EXPORT '+KB--BELL-PITCH+) (DEFCONSTANT +KB--BELL-PITCH+ 2))
+(define-request unmap-window 10 ((pad bytes 1) (window window)) ())
 
-(PROGN (EXPORT '+KB--BELL-DURATION+) (DEFCONSTANT +KB--BELL-DURATION+ 3))
+(define-request unmap-subwindows 11 ((pad bytes 1) (window window)) ())
 
-(PROGN (EXPORT '+KB--LED+) (DEFCONSTANT +KB--LED+ 4))
+(export '+config-window--x+)
 
-(PROGN (EXPORT '+KB--LED-MODE+) (DEFCONSTANT +KB--LED-MODE+ 5))
+(defconstant +config-window--x+ 0)
 
-(PROGN (EXPORT '+KB--KEY+) (DEFCONSTANT +KB--KEY+ 6))
+(export '+config-window--y+)
 
-(PROGN (EXPORT '+KB--AUTO-REPEAT-MODE+) (DEFCONSTANT +KB--AUTO-REPEAT-MODE+ 7))
+(defconstant +config-window--y+ 1)
 
-(PROGN (EXPORT '+LED-MODE--OFF+) (DEFCONSTANT +LED-MODE--OFF+ 0))
+(export '+config-window--width+)
 
-(PROGN (EXPORT '+LED-MODE--ON+) (DEFCONSTANT +LED-MODE--ON+ 1))
+(defconstant +config-window--width+ 2)
 
-(PROGN
- (EXPORT '+AUTO-REPEAT-MODE--OFF+)
- (DEFCONSTANT +AUTO-REPEAT-MODE--OFF+ 0))
+(export '+config-window--height+)
 
-(PROGN (EXPORT '+AUTO-REPEAT-MODE--ON+) (DEFCONSTANT +AUTO-REPEAT-MODE--ON+ 1))
+(defconstant +config-window--height+ 3)
 
-(PROGN
- (EXPORT '+AUTO-REPEAT-MODE--DEFAULT+)
- (DEFCONSTANT +AUTO-REPEAT-MODE--DEFAULT+ 2))
+(export '+config-window--border-width+)
 
-(DEFINE-REQUEST CHANGE-KEYBOARD-CONTROL 102
- ((PAD BYTES 1) (CARD32 VALUE-MASK)
-  (BITCASE VALUE-MASK (+KB--KEY-CLICK-PERCENT+ (INT32 KEY-CLICK-PERCENT))
-   (+KB--BELL-PERCENT+ (INT32 BELL-PERCENT))
-   (+KB--BELL-PITCH+ (INT32 BELL-PITCH))
-   (+KB--BELL-DURATION+ (INT32 BELL-DURATION)) (+KB--LED+ (CARD32 LED))
-   (+KB--LED-MODE+ (CARD32 LED-MODE)) (+KB--KEY+ (KEYCODE32 KEY))
-   (+KB--AUTO-REPEAT-MODE+ (CARD32 AUTO-REPEAT-MODE))))
- NIL)
+(defconstant +config-window--border-width+ 4)
 
-(DEFINE-REQUEST GET-KEYBOARD-CONTROL 103 NIL
- ((BYTE GLOBAL-AUTO-REPEAT) (CARD32 LED-MASK) (CARD8 KEY-CLICK-PERCENT)
-  (CARD8 BELL-PERCENT) (CARD16 BELL-PITCH) (CARD16 BELL-DURATION) (PAD BYTES 2)
-  (LIST CARD8 32 AUTO-REPEATS)))
+(export '+config-window--sibling+)
 
-(DEFINE-REQUEST BELL 104 ((INT8 PERCENT)) NIL)
+(defconstant +config-window--sibling+ 5)
 
-(DEFINE-REQUEST CHANGE-POINTER-CONTROL 105
- ((PAD BYTES 1) (INT16 ACCELERATION-NUMERATOR) (INT16 ACCELERATION-DENOMINATOR)
-  (INT16 THRESHOLD) (BOOL DO-ACCELERATION) (BOOL DO-THRESHOLD))
- NIL)
+(export '+config-window--stack-mode+)
 
-(DEFINE-REQUEST GET-POINTER-CONTROL 106 NIL
- ((PAD BYTES 1) (CARD16 ACCELERATION-NUMERATOR)
-  (CARD16 ACCELERATION-DENOMINATOR) (CARD16 THRESHOLD) (PAD BYTES 18)))
+(defconstant +config-window--stack-mode+ 6)
 
-(PROGN
- (EXPORT '+BLANKING--NOT-PREFERRED+)
- (DEFCONSTANT +BLANKING--NOT-PREFERRED+ 0))
+(export '+stack-mode--above+)
 
-(PROGN (EXPORT '+BLANKING--PREFERRED+) (DEFCONSTANT +BLANKING--PREFERRED+ 1))
+(defconstant +stack-mode--above+ 0)
 
-(PROGN (EXPORT '+BLANKING--DEFAULT+) (DEFCONSTANT +BLANKING--DEFAULT+ 2))
+(export '+stack-mode--below+)
 
-(PROGN
- (EXPORT '+EXPOSURES--NOT-ALLOWED+)
- (DEFCONSTANT +EXPOSURES--NOT-ALLOWED+ 0))
+(defconstant +stack-mode--below+ 1)
 
-(PROGN (EXPORT '+EXPOSURES--ALLOWED+) (DEFCONSTANT +EXPOSURES--ALLOWED+ 1))
+(export '+stack-mode--top-if+)
 
-(PROGN (EXPORT '+EXPOSURES--DEFAULT+) (DEFCONSTANT +EXPOSURES--DEFAULT+ 2))
+(defconstant +stack-mode--top-if+ 2)
 
-(DEFINE-REQUEST SET-SCREEN-SAVER 107
- ((PAD BYTES 1) (INT16 TIMEOUT) (INT16 INTERVAL) (CARD8 PREFER-BLANKING)
-  (CARD8 ALLOW-EXPOSURES))
- NIL)
+(export '+stack-mode--bottom-if+)
 
-(DEFINE-REQUEST GET-SCREEN-SAVER 108 NIL
- ((PAD BYTES 1) (CARD16 TIMEOUT) (CARD16 INTERVAL) (BYTE PREFER-BLANKING)
-  (BYTE ALLOW-EXPOSURES) (PAD BYTES 18)))
+(defconstant +stack-mode--bottom-if+ 3)
 
-(PROGN (EXPORT '+HOST-MODE--INSERT+) (DEFCONSTANT +HOST-MODE--INSERT+ 0))
+(export '+stack-mode--opposite+)
 
-(PROGN (EXPORT '+HOST-MODE--DELETE+) (DEFCONSTANT +HOST-MODE--DELETE+ 1))
+(defconstant +stack-mode--opposite+ 4)
 
-(PROGN (EXPORT '+FAMILY--INTERNET+) (DEFCONSTANT +FAMILY--INTERNET+ 0))
+(define-request configure-window 12
+ ((pad bytes 1) (window window) (card16 value-mask) (pad bytes 2)
+  (bitcase value-mask () ((+config-window--x+) ((int32 x)))
+   ((+config-window--y+) ((int32 y)))
+   ((+config-window--width+) ((card32 width)))
+   ((+config-window--height+) ((card32 height)))
+   ((+config-window--border-width+) ((card32 border-width)))
+   ((+config-window--sibling+) ((window sibling)))
+   ((+config-window--stack-mode+) ((card32 stack-mode)))))
+ ())
 
-(PROGN (EXPORT '+FAMILY--DECNET+) (DEFCONSTANT +FAMILY--DECNET+ 1))
+(export '+circulate--raise-lowest+)
 
-(PROGN (EXPORT '+FAMILY--CHAOS+) (DEFCONSTANT +FAMILY--CHAOS+ 2))
+(defconstant +circulate--raise-lowest+ 0)
 
-(PROGN
- (EXPORT '+FAMILY--SERVER-INTERPRETED+)
- (DEFCONSTANT +FAMILY--SERVER-INTERPRETED+ 5))
+(export '+circulate--lower-highest+)
 
-(PROGN (EXPORT '+FAMILY--INTERNET6+) (DEFCONSTANT +FAMILY--INTERNET6+ 6))
+(defconstant +circulate--lower-highest+ 1)
 
-(DEFINE-REQUEST CHANGE-HOSTS 109
- ((CARD8 MODE) (CARD8 FAMILY) (PAD BYTES 1) (CARD16 ADDRESS-LEN)
-  (LIST BYTE ADDRESS-LEN ADDRESS))
- NIL)
+(define-request circulate-window 13 ((card8 direction) (window window)) ())
 
-(DEFINE-STRUCT HOST
- ((CARD8 FAMILY) (PAD BYTES 1) (CARD16 ADDRESS-LEN)
-  (LIST BYTE ADDRESS-LEN ADDRESS) (PAD ALIGN 4)))
+(define-request get-geometry 14 ((pad bytes 1) (drawable drawable))
+ ((card8 depth) (window root) (int16 x) (int16 y) (card16 width)
+  (card16 height) (card16 border-width) (pad bytes 2)))
 
-(DEFINE-REQUEST LIST-HOSTS 110 NIL
- ((BYTE MODE) (CARD16 HOSTS-LEN) (PAD BYTES 22) (LIST HOST HOSTS-LEN HOSTS)))
+(define-request query-tree 15 ((pad bytes 1) (window window))
+ ((pad bytes 1) (window root) (window parent) (card16 children-len)
+  (pad bytes 14) (list window children-len children)))
 
-(PROGN
- (EXPORT '+ACCESS-CONTROL--DISABLE+)
- (DEFCONSTANT +ACCESS-CONTROL--DISABLE+ 0))
+(define-request intern-atom 16
+ ((bool only-if-exists) (card16 name-len) (pad bytes 2)
+  (list char name-len name))
+ ((pad bytes 1) (atom atom)))
 
-(PROGN
- (EXPORT '+ACCESS-CONTROL--ENABLE+)
- (DEFCONSTANT +ACCESS-CONTROL--ENABLE+ 1))
+(define-request get-atom-name 17 ((pad bytes 1) (atom atom))
+ ((pad bytes 1) (card16 name-len) (pad bytes 22) (list char name-len name)))
 
-(DEFINE-REQUEST SET-ACCESS-CONTROL 111 ((CARD8 MODE)) NIL)
+(export '+prop-mode--replace+)
 
-(PROGN
- (EXPORT '+CLOSE-DOWN--DESTROY-ALL+)
- (DEFCONSTANT +CLOSE-DOWN--DESTROY-ALL+ 0))
+(defconstant +prop-mode--replace+ 0)
 
-(PROGN
- (EXPORT '+CLOSE-DOWN--RETAIN-PERMANENT+)
- (DEFCONSTANT +CLOSE-DOWN--RETAIN-PERMANENT+ 1))
+(export '+prop-mode--prepend+)
 
-(PROGN
- (EXPORT '+CLOSE-DOWN--RETAIN-TEMPORARY+)
- (DEFCONSTANT +CLOSE-DOWN--RETAIN-TEMPORARY+ 2))
+(defconstant +prop-mode--prepend+ 1)
 
-(DEFINE-REQUEST SET-CLOSE-DOWN-MODE 112 ((CARD8 MODE)) NIL)
+(export '+prop-mode--append+)
 
-(PROGN (EXPORT '+KILL--ALL-TEMPORARY+) (DEFCONSTANT +KILL--ALL-TEMPORARY+ 0))
+(defconstant +prop-mode--append+ 2)
 
-(DEFINE-REQUEST KILL-CLIENT 113 ((PAD BYTES 1) (CARD32 RESOURCE)) NIL)
+(define-request change-property 18
+ ((card8 mode) (window window) (atom property) (atom type) (card8 format)
+  (pad bytes 3) (card32 data-len) (list void (/ (* data-len format) 8) data))
+ ())
 
-(DEFINE-REQUEST ROTATE-PROPERTIES 114
- ((PAD BYTES 1) (WINDOW WINDOW) (CARD16 ATOMS-LEN) (INT16 DELTA)
-  (LIST ATOM ATOMS-LEN ATOMS))
- NIL)
+(define-request delete-property 19
+ ((pad bytes 1) (window window) (atom property)) ())
 
-(PROGN (EXPORT '+SCREEN-SAVER--RESET+) (DEFCONSTANT +SCREEN-SAVER--RESET+ 0))
+(export '+get-property-type--any+)
 
-(PROGN (EXPORT '+SCREEN-SAVER--ACTIVE+) (DEFCONSTANT +SCREEN-SAVER--ACTIVE+ 1))
+(defconstant +get-property-type--any+ 0)
 
-(DEFINE-REQUEST FORCE-SCREEN-SAVER 115 ((CARD8 MODE)) NIL)
+(define-request get-property 20
+ ((bool delete) (window window) (atom property) (atom type)
+  (card32 long-offset) (card32 long-length))
+ ((card8 format) (atom type) (card32 bytes-after) (card32 value-len)
+  (pad bytes 12) (list void (* value-len (/ format 8)) value)))
 
-(PROGN
- (EXPORT '+MAPPING-STATUS--SUCCESS+)
- (DEFCONSTANT +MAPPING-STATUS--SUCCESS+ 0))
+(define-request list-properties 21 ((pad bytes 1) (window window))
+ ((pad bytes 1) (card16 atoms-len) (pad bytes 22) (list atom atoms-len atoms)))
 
-(PROGN (EXPORT '+MAPPING-STATUS--BUSY+) (DEFCONSTANT +MAPPING-STATUS--BUSY+ 1))
+(define-request set-selection-owner 22
+ ((pad bytes 1) (window owner) (atom selection) (timestamp time)) ())
 
-(PROGN
- (EXPORT '+MAPPING-STATUS--FAILURE+)
- (DEFCONSTANT +MAPPING-STATUS--FAILURE+ 2))
+(define-request get-selection-owner 23 ((pad bytes 1) (atom selection))
+ ((pad bytes 1) (window owner)))
 
-(DEFINE-REQUEST SET-POINTER-MAPPING 116
- ((CARD8 MAP-LEN) (LIST CARD8 MAP-LEN MAP)) ((BYTE STATUS)))
+(define-request convert-selection 24
+ ((pad bytes 1) (window requestor) (atom selection) (atom target)
+  (atom property) (timestamp time))
+ ())
 
-(DEFINE-REQUEST GET-POINTER-MAPPING 117 NIL
- ((CARD8 MAP-LEN) (PAD BYTES 24) (LIST CARD8 MAP-LEN MAP)))
+(export '+send-event-dest--pointer-window+)
 
-(PROGN (EXPORT '+MAP-INDEX--SHIFT+) (DEFCONSTANT +MAP-INDEX--SHIFT+ 0))
+(defconstant +send-event-dest--pointer-window+ 0)
 
-(PROGN (EXPORT '+MAP-INDEX--LOCK+) (DEFCONSTANT +MAP-INDEX--LOCK+ 1))
+(export '+send-event-dest--item-focus+)
 
-(PROGN (EXPORT '+MAP-INDEX--CONTROL+) (DEFCONSTANT +MAP-INDEX--CONTROL+ 2))
+(defconstant +send-event-dest--item-focus+ 1)
 
-(PROGN (EXPORT '+MAP-INDEX--1+) (DEFCONSTANT +MAP-INDEX--1+ 3))
+(define-request send-event 25
+ ((bool propagate) (window destination) (card32 event-mask)
+  (list char 32 event))
+ ())
 
-(PROGN (EXPORT '+MAP-INDEX--2+) (DEFCONSTANT +MAP-INDEX--2+ 4))
+(export '+grab-mode--sync+)
 
-(PROGN (EXPORT '+MAP-INDEX--3+) (DEFCONSTANT +MAP-INDEX--3+ 5))
+(defconstant +grab-mode--sync+ 0)
 
-(PROGN (EXPORT '+MAP-INDEX--4+) (DEFCONSTANT +MAP-INDEX--4+ 6))
+(export '+grab-mode--async+)
 
-(PROGN (EXPORT '+MAP-INDEX--5+) (DEFCONSTANT +MAP-INDEX--5+ 7))
+(defconstant +grab-mode--async+ 1)
 
-(DEFINE-REQUEST SET-MODIFIER-MAPPING 118
- ((CARD8 KEYCODES-PER-MODIFIER)
-  (LIST KEYCODE (* KEYCODES-PER-MODIFIER 8) KEYCODES))
- ((BYTE STATUS)))
+(export '+grab-status--success+)
 
-(DEFINE-REQUEST GET-MODIFIER-MAPPING 119 NIL
- ((CARD8 KEYCODES-PER-MODIFIER) (PAD BYTES 24)
-  (LIST KEYCODE (* KEYCODES-PER-MODIFIER 8) KEYCODES)))
+(defconstant +grab-status--success+ 0)
 
-(DEFINE-REQUEST NO-OPERATION 127 NIL NIL)
+(export '+grab-status--already-grabbed+)
+
+(defconstant +grab-status--already-grabbed+ 1)
+
+(export '+grab-status--invalid-time+)
+
+(defconstant +grab-status--invalid-time+ 2)
+
+(export '+grab-status--not-viewable+)
+
+(defconstant +grab-status--not-viewable+ 3)
+
+(export '+grab-status--frozen+)
+
+(defconstant +grab-status--frozen+ 4)
+
+(export '+cursor--none+)
+
+(defconstant +cursor--none+ 0)
+
+(define-request grab-pointer 26
+ ((bool owner-events) (window grab-window) (card16 event-mask)
+  (byte pointer-mode) (byte keyboard-mode) (window confine-to) (cursor cursor)
+  (timestamp time))
+ ((byte status)))
+
+(define-request ungrab-pointer 27 ((pad bytes 1) (timestamp time)) ())
+
+(export '+button-index--any+)
+
+(defconstant +button-index--any+ 0)
+
+(export '+button-index--1+)
+
+(defconstant +button-index--1+ 1)
+
+(export '+button-index--2+)
+
+(defconstant +button-index--2+ 2)
+
+(export '+button-index--3+)
+
+(defconstant +button-index--3+ 3)
+
+(export '+button-index--4+)
+
+(defconstant +button-index--4+ 4)
+
+(export '+button-index--5+)
+
+(defconstant +button-index--5+ 5)
+
+(define-request grab-button 28
+ ((bool owner-events) (window grab-window) (card16 event-mask)
+  (card8 pointer-mode) (card8 keyboard-mode) (window confine-to)
+  (cursor cursor) (card8 button) (pad bytes 1) (card16 modifiers))
+ ())
+
+(define-request ungrab-button 29
+ ((card8 button) (window grab-window) (card16 modifiers) (pad bytes 2)) ())
+
+(define-request change-active-pointer-grab 30
+ ((pad bytes 1) (cursor cursor) (timestamp time) (card16 event-mask)
+  (pad bytes 2))
+ ())
+
+(define-request grab-keyboard 31
+ ((bool owner-events) (window grab-window) (timestamp time) (byte pointer-mode)
+  (byte keyboard-mode) (pad bytes 2))
+ ((byte status)))
+
+(define-request ungrab-keyboard 32 ((pad bytes 1) (timestamp time)) ())
+
+(export '+grab--any+)
+
+(defconstant +grab--any+ 0)
+
+(define-request grab-key 33
+ ((bool owner-events) (window grab-window) (card16 modifiers) (keycode key)
+  (card8 pointer-mode) (card8 keyboard-mode) (pad bytes 3))
+ ())
+
+(define-request ungrab-key 34
+ ((keycode key) (window grab-window) (card16 modifiers) (pad bytes 2)) ())
+
+(export '+allow--async-pointer+)
+
+(defconstant +allow--async-pointer+ 0)
+
+(export '+allow--sync-pointer+)
+
+(defconstant +allow--sync-pointer+ 1)
+
+(export '+allow--replay-pointer+)
+
+(defconstant +allow--replay-pointer+ 2)
+
+(export '+allow--async-keyboard+)
+
+(defconstant +allow--async-keyboard+ 3)
+
+(export '+allow--sync-keyboard+)
+
+(defconstant +allow--sync-keyboard+ 4)
+
+(export '+allow--replay-keyboard+)
+
+(defconstant +allow--replay-keyboard+ 5)
+
+(export '+allow--async-both+)
+
+(defconstant +allow--async-both+ 6)
+
+(export '+allow--sync-both+)
+
+(defconstant +allow--sync-both+ 7)
+
+(define-request allow-events 35 ((card8 mode) (timestamp time)) ())
+
+(define-request grab-server 36 () ())
+
+(define-request ungrab-server 37 () ())
+
+(define-request query-pointer 38 ((pad bytes 1) (window window))
+ ((bool same-screen) (window root) (window child) (int16 root-x) (int16 root-y)
+  (int16 win-x) (int16 win-y) (card16 mask) (pad bytes 2)))
+
+(define-struct timecoord ((timestamp time) (int16 x) (int16 y)))
+
+(define-request get-motion-events 39
+ ((pad bytes 1) (window window) (timestamp start) (timestamp stop))
+ ((pad bytes 1) (card32 events-len) (pad bytes 20)
+  (list timecoord events-len events)))
+
+(define-request translate-coordinates 40
+ ((pad bytes 1) (window src-window) (window dst-window) (int16 src-x)
+  (int16 src-y))
+ ((bool same-screen) (window child) (int16 dst-x) (int16 dst-y)))
+
+(define-request warp-pointer 41
+ ((pad bytes 1) (window src-window) (window dst-window) (int16 src-x)
+  (int16 src-y) (card16 src-width) (card16 src-height) (int16 dst-x)
+  (int16 dst-y))
+ ())
+
+(export '+input-focus--none+)
+
+(defconstant +input-focus--none+ 0)
+
+(export '+input-focus--pointer-root+)
+
+(defconstant +input-focus--pointer-root+ 1)
+
+(export '+input-focus--parent+)
+
+(defconstant +input-focus--parent+ 2)
+
+(export '+input-focus--follow-keyboard+)
+
+(defconstant +input-focus--follow-keyboard+ 3)
+
+(define-request set-input-focus 42
+ ((card8 revert-to) (window focus) (timestamp time)) ())
+
+(define-request get-input-focus 43 () ((card8 revert-to) (window focus)))
+
+(define-request query-keymap 44 () ((pad bytes 1) (list card8 32 keys)))
+
+(define-request open-font 45
+ ((pad bytes 1) (font fid) (card16 name-len) (pad bytes 2)
+  (list char name-len name))
+ ())
+
+(define-request close-font 46 ((pad bytes 1) (font font)) ())
+
+(export '+font-draw--left-to-right+)
+
+(defconstant +font-draw--left-to-right+ 0)
+
+(export '+font-draw--right-to-left+)
+
+(defconstant +font-draw--right-to-left+ 1)
+
+(define-struct fontprop ((atom name) (card32 value)))
+
+(define-struct charinfo
+ ((int16 left-side-bearing) (int16 right-side-bearing) (int16 character-width)
+  (int16 ascent) (int16 descent) (card16 attributes)))
+
+(define-request query-font 47 ((pad bytes 1) (fontable font))
+ ((pad bytes 1) (charinfo min-bounds) (pad bytes 4) (charinfo max-bounds)
+  (pad bytes 4) (card16 min-char-or-byte2) (card16 max-char-or-byte2)
+  (card16 default-char) (card16 properties-len) (byte draw-direction)
+  (card8 min-byte1) (card8 max-byte1) (bool all-chars-exist)
+  (int16 font-ascent) (int16 font-descent) (card32 char-infos-len)
+  (list fontprop properties-len properties)
+  (list charinfo char-infos-len char-infos)))
+
+(define-request query-text-extents 48
+ ((aux (bool odd-length) (logand string-len 1)) (fontable font)
+  (list char2b (length string) string))
+ ((byte draw-direction) (int16 font-ascent) (int16 font-descent)
+  (int16 overall-ascent) (int16 overall-descent) (int32 overall-width)
+  (int32 overall-left) (int32 overall-right)))
+
+(define-struct str ((card8 name-len) (list char name-len name)))
+
+(define-request list-fonts 49
+ ((pad bytes 1) (card16 max-names) (card16 pattern-len)
+  (list char pattern-len pattern))
+ ((pad bytes 1) (card16 names-len) (pad bytes 22) (list str names-len names)))
+
+(define-request list-fonts-with-info 50
+ ((pad bytes 1) (card16 max-names) (card16 pattern-len)
+  (list char pattern-len pattern))
+ ((card8 name-len) (charinfo min-bounds) (pad bytes 4) (charinfo max-bounds)
+  (pad bytes 4) (card16 min-char-or-byte2) (card16 max-char-or-byte2)
+  (card16 default-char) (card16 properties-len) (byte draw-direction)
+  (card8 min-byte1) (card8 max-byte1) (bool all-chars-exist)
+  (int16 font-ascent) (int16 font-descent) (card32 replies-hint)
+  (list fontprop properties-len properties) (list char name-len name)))
+
+(define-request set-font-path 51
+ ((pad bytes 1) (card16 font-qty) (pad bytes 2) (list str font-qty font)) ())
+
+(define-request get-font-path 52 ()
+ ((pad bytes 1) (card16 path-len) (pad bytes 22) (list str path-len path)))
+
+(define-request create-pixmap 53
+ ((card8 depth) (pixmap pid) (drawable drawable) (card16 width)
+  (card16 height))
+ ())
+
+(define-request free-pixmap 54 ((pad bytes 1) (pixmap pixmap)) ())
+
+(export '+gc--function+)
+
+(defconstant +gc--function+ 0)
+
+(export '+gc--plane-mask+)
+
+(defconstant +gc--plane-mask+ 1)
+
+(export '+gc--foreground+)
+
+(defconstant +gc--foreground+ 2)
+
+(export '+gc--background+)
+
+(defconstant +gc--background+ 3)
+
+(export '+gc--line-width+)
+
+(defconstant +gc--line-width+ 4)
+
+(export '+gc--line-style+)
+
+(defconstant +gc--line-style+ 5)
+
+(export '+gc--cap-style+)
+
+(defconstant +gc--cap-style+ 6)
+
+(export '+gc--join-style+)
+
+(defconstant +gc--join-style+ 7)
+
+(export '+gc--fill-style+)
+
+(defconstant +gc--fill-style+ 8)
+
+(export '+gc--fill-rule+)
+
+(defconstant +gc--fill-rule+ 9)
+
+(export '+gc--tile+)
+
+(defconstant +gc--tile+ 10)
+
+(export '+gc--stipple+)
+
+(defconstant +gc--stipple+ 11)
+
+(export '+gc--tile-stipple-origin-x+)
+
+(defconstant +gc--tile-stipple-origin-x+ 12)
+
+(export '+gc--tile-stipple-origin-y+)
+
+(defconstant +gc--tile-stipple-origin-y+ 13)
+
+(export '+gc--font+)
+
+(defconstant +gc--font+ 14)
+
+(export '+gc--subwindow-mode+)
+
+(defconstant +gc--subwindow-mode+ 15)
+
+(export '+gc--graphics-exposures+)
+
+(defconstant +gc--graphics-exposures+ 16)
+
+(export '+gc--clip-origin-x+)
+
+(defconstant +gc--clip-origin-x+ 17)
+
+(export '+gc--clip-origin-y+)
+
+(defconstant +gc--clip-origin-y+ 18)
+
+(export '+gc--clip-mask+)
+
+(defconstant +gc--clip-mask+ 19)
+
+(export '+gc--dash-offset+)
+
+(defconstant +gc--dash-offset+ 20)
+
+(export '+gc--dash-list+)
+
+(defconstant +gc--dash-list+ 21)
+
+(export '+gc--arc-mode+)
+
+(defconstant +gc--arc-mode+ 22)
+
+(export '+gx--clear+)
+
+(defconstant +gx--clear+ 0)
+
+(export '+gx--and+)
+
+(defconstant +gx--and+ 1)
+
+(export '+gx--and-reverse+)
+
+(defconstant +gx--and-reverse+ 2)
+
+(export '+gx--copy+)
+
+(defconstant +gx--copy+ 3)
+
+(export '+gx--and-inverted+)
+
+(defconstant +gx--and-inverted+ 4)
+
+(export '+gx--noop+)
+
+(defconstant +gx--noop+ 5)
+
+(export '+gx--xor+)
+
+(defconstant +gx--xor+ 6)
+
+(export '+gx--or+)
+
+(defconstant +gx--or+ 7)
+
+(export '+gx--nor+)
+
+(defconstant +gx--nor+ 8)
+
+(export '+gx--equiv+)
+
+(defconstant +gx--equiv+ 9)
+
+(export '+gx--invert+)
+
+(defconstant +gx--invert+ 10)
+
+(export '+gx--or-reverse+)
+
+(defconstant +gx--or-reverse+ 11)
+
+(export '+gx--copy-inverted+)
+
+(defconstant +gx--copy-inverted+ 12)
+
+(export '+gx--or-inverted+)
+
+(defconstant +gx--or-inverted+ 13)
+
+(export '+gx--nand+)
+
+(defconstant +gx--nand+ 14)
+
+(export '+gx--set+)
+
+(defconstant +gx--set+ 15)
+
+(export '+line-style--solid+)
+
+(defconstant +line-style--solid+ 0)
+
+(export '+line-style--on-off-dash+)
+
+(defconstant +line-style--on-off-dash+ 1)
+
+(export '+line-style--double-dash+)
+
+(defconstant +line-style--double-dash+ 2)
+
+(export '+cap-style--not-last+)
+
+(defconstant +cap-style--not-last+ 0)
+
+(export '+cap-style--butt+)
+
+(defconstant +cap-style--butt+ 1)
+
+(export '+cap-style--round+)
+
+(defconstant +cap-style--round+ 2)
+
+(export '+cap-style--projecting+)
+
+(defconstant +cap-style--projecting+ 3)
+
+(export '+join-style--miter+)
+
+(defconstant +join-style--miter+ 0)
+
+(export '+join-style--round+)
+
+(defconstant +join-style--round+ 1)
+
+(export '+join-style--bevel+)
+
+(defconstant +join-style--bevel+ 2)
+
+(export '+fill-style--solid+)
+
+(defconstant +fill-style--solid+ 0)
+
+(export '+fill-style--tiled+)
+
+(defconstant +fill-style--tiled+ 1)
+
+(export '+fill-style--stippled+)
+
+(defconstant +fill-style--stippled+ 2)
+
+(export '+fill-style--opaque-stippled+)
+
+(defconstant +fill-style--opaque-stippled+ 3)
+
+(export '+fill-rule--even-odd+)
+
+(defconstant +fill-rule--even-odd+ 0)
+
+(export '+fill-rule--winding+)
+
+(defconstant +fill-rule--winding+ 1)
+
+(export '+subwindow-mode--clip-by-children+)
+
+(defconstant +subwindow-mode--clip-by-children+ 0)
+
+(export '+subwindow-mode--include-inferiors+)
+
+(defconstant +subwindow-mode--include-inferiors+ 1)
+
+(export '+arc-mode--chord+)
+
+(defconstant +arc-mode--chord+ 0)
+
+(export '+arc-mode--pie-slice+)
+
+(defconstant +arc-mode--pie-slice+ 1)
+
+(define-request create-gc 55
+ ((pad bytes 1) (gcontext cid) (drawable drawable) (card32 value-mask)
+  (bitcase value-mask () ((+gc--function+) ((card32 function)))
+   ((+gc--plane-mask+) ((card32 plane-mask)))
+   ((+gc--foreground+) ((card32 foreground)))
+   ((+gc--background+) ((card32 background)))
+   ((+gc--line-width+) ((card32 line-width)))
+   ((+gc--line-style+) ((card32 line-style)))
+   ((+gc--cap-style+) ((card32 cap-style)))
+   ((+gc--join-style+) ((card32 join-style)))
+   ((+gc--fill-style+) ((card32 fill-style)))
+   ((+gc--fill-rule+) ((card32 fill-rule))) ((+gc--tile+) ((pixmap tile)))
+   ((+gc--stipple+) ((pixmap stipple)))
+   ((+gc--tile-stipple-origin-x+) ((int32 tile-stipple-x-origin)))
+   ((+gc--tile-stipple-origin-y+) ((int32 tile-stipple-y-origin)))
+   ((+gc--font+) ((font font)))
+   ((+gc--subwindow-mode+) ((card32 subwindow-mode)))
+   ((+gc--graphics-exposures+) ((bool32 graphics-exposures)))
+   ((+gc--clip-origin-x+) ((int32 clip-x-origin)))
+   ((+gc--clip-origin-y+) ((int32 clip-y-origin)))
+   ((+gc--clip-mask+) ((pixmap clip-mask)))
+   ((+gc--dash-offset+) ((card32 dash-offset)))
+   ((+gc--dash-list+) ((card32 dashes)))
+   ((+gc--arc-mode+) ((card32 arc-mode)))))
+ ())
+
+(define-request change-gc 56
+ ((pad bytes 1) (gcontext gc) (card32 value-mask)
+  (bitcase value-mask () ((+gc--function+) ((card32 function)))
+   ((+gc--plane-mask+) ((card32 plane-mask)))
+   ((+gc--foreground+) ((card32 foreground)))
+   ((+gc--background+) ((card32 background)))
+   ((+gc--line-width+) ((card32 line-width)))
+   ((+gc--line-style+) ((card32 line-style)))
+   ((+gc--cap-style+) ((card32 cap-style)))
+   ((+gc--join-style+) ((card32 join-style)))
+   ((+gc--fill-style+) ((card32 fill-style)))
+   ((+gc--fill-rule+) ((card32 fill-rule))) ((+gc--tile+) ((pixmap tile)))
+   ((+gc--stipple+) ((pixmap stipple)))
+   ((+gc--tile-stipple-origin-x+) ((int32 tile-stipple-x-origin)))
+   ((+gc--tile-stipple-origin-y+) ((int32 tile-stipple-y-origin)))
+   ((+gc--font+) ((font font)))
+   ((+gc--subwindow-mode+) ((card32 subwindow-mode)))
+   ((+gc--graphics-exposures+) ((bool32 graphics-exposures)))
+   ((+gc--clip-origin-x+) ((int32 clip-x-origin)))
+   ((+gc--clip-origin-y+) ((int32 clip-y-origin)))
+   ((+gc--clip-mask+) ((pixmap clip-mask)))
+   ((+gc--dash-offset+) ((card32 dash-offset)))
+   ((+gc--dash-list+) ((card32 dashes)))
+   ((+gc--arc-mode+) ((card32 arc-mode)))))
+ ())
+
+(define-request copy-gc 57
+ ((pad bytes 1) (gcontext src-gc) (gcontext dst-gc) (card32 value-mask)) ())
+
+(define-request set-dashes 58
+ ((pad bytes 1) (gcontext gc) (card16 dash-offset) (card16 dashes-len)
+  (list card8 dashes-len dashes))
+ ())
+
+(export '+clip-ordering--unsorted+)
+
+(defconstant +clip-ordering--unsorted+ 0)
+
+(export '+clip-ordering--ysorted+)
+
+(defconstant +clip-ordering--ysorted+ 1)
+
+(export '+clip-ordering--yxsorted+)
+
+(defconstant +clip-ordering--yxsorted+ 2)
+
+(export '+clip-ordering--yxbanded+)
+
+(defconstant +clip-ordering--yxbanded+ 3)
+
+(define-request set-clip-rectangles 59
+ ((byte ordering) (gcontext gc) (int16 clip-x-origin) (int16 clip-y-origin)
+  (list rectangle (length rectangles) rectangles))
+ ())
+
+(define-request free-gc 60 ((pad bytes 1) (gcontext gc)) ())
+
+(define-request clear-area 61
+ ((bool exposures) (window window) (int16 x) (int16 y) (card16 width)
+  (card16 height))
+ ())
+
+(define-request copy-area 62
+ ((pad bytes 1) (drawable src-drawable) (drawable dst-drawable) (gcontext gc)
+  (int16 src-x) (int16 src-y) (int16 dst-x) (int16 dst-y) (card16 width)
+  (card16 height))
+ ())
+
+(define-request copy-plane 63
+ ((pad bytes 1) (drawable src-drawable) (drawable dst-drawable) (gcontext gc)
+  (int16 src-x) (int16 src-y) (int16 dst-x) (int16 dst-y) (card16 width)
+  (card16 height) (card32 bit-plane))
+ ())
+
+(export '+coord-mode--origin+)
+
+(defconstant +coord-mode--origin+ 0)
+
+(export '+coord-mode--previous+)
+
+(defconstant +coord-mode--previous+ 1)
+
+(define-request poly-point 64
+ ((byte coordinate-mode) (drawable drawable) (gcontext gc)
+  (list point (length points) points))
+ ())
+
+(define-request poly-line 65
+ ((byte coordinate-mode) (drawable drawable) (gcontext gc)
+  (list point (length points) points))
+ ())
+
+(define-struct segment ((int16 x1) (int16 y1) (int16 x2) (int16 y2)))
+
+(define-request poly-segment 66
+ ((pad bytes 1) (drawable drawable) (gcontext gc)
+  (list segment (length segments) segments))
+ ())
+
+(define-request poly-rectangle 67
+ ((pad bytes 1) (drawable drawable) (gcontext gc)
+  (list rectangle (length rectangles) rectangles))
+ ())
+
+(define-request poly-arc 68
+ ((pad bytes 1) (drawable drawable) (gcontext gc)
+  (list arc (length arcs) arcs))
+ ())
+
+(export '+poly-shape--complex+)
+
+(defconstant +poly-shape--complex+ 0)
+
+(export '+poly-shape--nonconvex+)
+
+(defconstant +poly-shape--nonconvex+ 1)
+
+(export '+poly-shape--convex+)
+
+(defconstant +poly-shape--convex+ 2)
+
+(define-request fill-poly 69
+ ((pad bytes 1) (drawable drawable) (gcontext gc) (card8 shape)
+  (card8 coordinate-mode) (pad bytes 2) (list point (length points) points))
+ ())
+
+(define-request poly-fill-rectangle 70
+ ((pad bytes 1) (drawable drawable) (gcontext gc)
+  (list rectangle (length rectangles) rectangles))
+ ())
+
+(define-request poly-fill-arc 71
+ ((pad bytes 1) (drawable drawable) (gcontext gc)
+  (list arc (length arcs) arcs))
+ ())
+
+(export '+image-format--xybitmap+)
+
+(defconstant +image-format--xybitmap+ 0)
+
+(export '+image-format--xypixmap+)
+
+(defconstant +image-format--xypixmap+ 1)
+
+(export '+image-format--zpixmap+)
+
+(defconstant +image-format--zpixmap+ 2)
+
+(define-request put-image 72
+ ((card8 format) (drawable drawable) (gcontext gc) (card16 width)
+  (card16 height) (int16 dst-x) (int16 dst-y) (card8 left-pad) (card8 depth)
+  (pad bytes 2) (list byte (length data) data))
+ ())
+
+(define-request get-image 73
+ ((card8 format) (drawable drawable) (int16 x) (int16 y) (card16 width)
+  (card16 height) (card32 plane-mask))
+ ((card8 depth) (visualid visual) (pad bytes 20) (list byte (* length 4) data)))
+
+(define-request poly-text8 74
+ ((pad bytes 1) (drawable drawable) (gcontext gc) (int16 x) (int16 y)
+  (list byte (length items) items))
+ ())
+
+(define-request poly-text16 75
+ ((pad bytes 1) (drawable drawable) (gcontext gc) (int16 x) (int16 y)
+  (list byte (length items) items))
+ ())
+
+(define-request image-text8 76
+ ((byte string-len) (drawable drawable) (gcontext gc) (int16 x) (int16 y)
+  (list char string-len string))
+ ())
+
+(define-request image-text16 77
+ ((byte string-len) (drawable drawable) (gcontext gc) (int16 x) (int16 y)
+  (list char2b string-len string))
+ ())
+
+(export '+colormap-alloc--none+)
+
+(defconstant +colormap-alloc--none+ 0)
+
+(export '+colormap-alloc--all+)
+
+(defconstant +colormap-alloc--all+ 1)
+
+(define-request create-colormap 78
+ ((byte alloc) (colormap mid) (window window) (visualid visual)) ())
+
+(define-request free-colormap 79 ((pad bytes 1) (colormap cmap)) ())
+
+(define-request copy-colormap-and-free 80
+ ((pad bytes 1) (colormap mid) (colormap src-cmap)) ())
+
+(define-request install-colormap 81 ((pad bytes 1) (colormap cmap)) ())
+
+(define-request uninstall-colormap 82 ((pad bytes 1) (colormap cmap)) ())
+
+(define-request list-installed-colormaps 83 ((pad bytes 1) (window window))
+ ((pad bytes 1) (card16 cmaps-len) (pad bytes 22)
+  (list colormap cmaps-len cmaps)))
+
+(define-request alloc-color 84
+ ((pad bytes 1) (colormap cmap) (card16 red) (card16 green) (card16 blue)
+  (pad bytes 2))
+ ((pad bytes 1) (card16 red) (card16 green) (card16 blue) (pad bytes 2)
+  (card32 pixel)))
+
+(define-request alloc-named-color 85
+ ((pad bytes 1) (colormap cmap) (card16 name-len) (pad bytes 2)
+  (list char name-len name))
+ ((pad bytes 1) (card32 pixel) (card16 exact-red) (card16 exact-green)
+  (card16 exact-blue) (card16 visual-red) (card16 visual-green)
+  (card16 visual-blue)))
+
+(define-request alloc-color-cells 86
+ ((bool contiguous) (colormap cmap) (card16 colors) (card16 planes))
+ ((pad bytes 1) (card16 pixels-len) (card16 masks-len) (pad bytes 20)
+  (list card32 pixels-len pixels) (list card32 masks-len masks)))
+
+(define-request alloc-color-planes 87
+ ((bool contiguous) (colormap cmap) (card16 colors) (card16 reds)
+  (card16 greens) (card16 blues))
+ ((pad bytes 1) (card16 pixels-len) (pad bytes 2) (card32 red-mask)
+  (card32 green-mask) (card32 blue-mask) (pad bytes 8)
+  (list card32 pixels-len pixels)))
+
+(define-request free-colors 88
+ ((pad bytes 1) (colormap cmap) (card32 plane-mask)
+  (list card32 (length pixels) pixels))
+ ())
+
+(export '+color-flag--red+)
+
+(defconstant +color-flag--red+ 0)
+
+(export '+color-flag--green+)
+
+(defconstant +color-flag--green+ 1)
+
+(export '+color-flag--blue+)
+
+(defconstant +color-flag--blue+ 2)
+
+(define-struct coloritem
+ ((card32 pixel) (card16 red) (card16 green) (card16 blue) (byte flags)
+  (pad bytes 1)))
+
+(define-request store-colors 89
+ ((pad bytes 1) (colormap cmap) (list coloritem (length items) items)) ())
+
+(define-request store-named-color 90
+ ((card8 flags) (colormap cmap) (card32 pixel) (card16 name-len) (pad bytes 2)
+  (list char name-len name))
+ ())
+
+(define-struct rgb ((card16 red) (card16 green) (card16 blue) (pad bytes 2)))
+
+(define-request query-colors 91
+ ((pad bytes 1) (colormap cmap) (list card32 (length pixels) pixels))
+ ((pad bytes 1) (card16 colors-len) (pad bytes 22)
+  (list rgb colors-len colors)))
+
+(define-request lookup-color 92
+ ((pad bytes 1) (colormap cmap) (card16 name-len) (pad bytes 2)
+  (list char name-len name))
+ ((pad bytes 1) (card16 exact-red) (card16 exact-green) (card16 exact-blue)
+  (card16 visual-red) (card16 visual-green) (card16 visual-blue)))
+
+(export '+pixmap--none+)
+
+(defconstant +pixmap--none+ 0)
+
+(define-request create-cursor 93
+ ((pad bytes 1) (cursor cid) (pixmap source) (pixmap mask) (card16 fore-red)
+  (card16 fore-green) (card16 fore-blue) (card16 back-red) (card16 back-green)
+  (card16 back-blue) (card16 x) (card16 y))
+ ())
+
+(export '+font--none+)
+
+(defconstant +font--none+ 0)
+
+(define-request create-glyph-cursor 94
+ ((pad bytes 1) (cursor cid) (font source-font) (font mask-font)
+  (card16 source-char) (card16 mask-char) (card16 fore-red) (card16 fore-green)
+  (card16 fore-blue) (card16 back-red) (card16 back-green) (card16 back-blue))
+ ())
+
+(define-request free-cursor 95 ((pad bytes 1) (cursor cursor)) ())
+
+(define-request recolor-cursor 96
+ ((pad bytes 1) (cursor cursor) (card16 fore-red) (card16 fore-green)
+  (card16 fore-blue) (card16 back-red) (card16 back-green) (card16 back-blue))
+ ())
+
+(export '+query-shape-of--largest-cursor+)
+
+(defconstant +query-shape-of--largest-cursor+ 0)
+
+(export '+query-shape-of--fastest-tile+)
+
+(defconstant +query-shape-of--fastest-tile+ 1)
+
+(export '+query-shape-of--fastest-stipple+)
+
+(defconstant +query-shape-of--fastest-stipple+ 2)
+
+(define-request query-best-size 97
+ ((card8 class) (drawable drawable) (card16 width) (card16 height))
+ ((pad bytes 1) (card16 width) (card16 height)))
+
+(define-request query-extension 98
+ ((pad bytes 1) (card16 name-len) (pad bytes 2) (list char name-len name))
+ ((pad bytes 1) (bool present) (card8 major-opcode) (card8 first-event)
+  (card8 first-error)))
+
+(define-request list-extensions 99 ()
+ ((card8 names-len) (pad bytes 24) (list str names-len names)))
+
+(define-request change-keyboard-mapping 100
+ ((card8 keycode-count) (keycode first-keycode) (card8 keysyms-per-keycode)
+  (pad bytes 2) (list keysym (* keycode-count keysyms-per-keycode) keysyms))
+ ())
+
+(define-request get-keyboard-mapping 101
+ ((pad bytes 1) (keycode first-keycode) (card8 count))
+ ((byte keysyms-per-keycode) (pad bytes 24) (list keysym length keysyms)))
+
+(export '+kb--key-click-percent+)
+
+(defconstant +kb--key-click-percent+ 0)
+
+(export '+kb--bell-percent+)
+
+(defconstant +kb--bell-percent+ 1)
+
+(export '+kb--bell-pitch+)
+
+(defconstant +kb--bell-pitch+ 2)
+
+(export '+kb--bell-duration+)
+
+(defconstant +kb--bell-duration+ 3)
+
+(export '+kb--led+)
+
+(defconstant +kb--led+ 4)
+
+(export '+kb--led-mode+)
+
+(defconstant +kb--led-mode+ 5)
+
+(export '+kb--key+)
+
+(defconstant +kb--key+ 6)
+
+(export '+kb--auto-repeat-mode+)
+
+(defconstant +kb--auto-repeat-mode+ 7)
+
+(export '+led-mode--off+)
+
+(defconstant +led-mode--off+ 0)
+
+(export '+led-mode--on+)
+
+(defconstant +led-mode--on+ 1)
+
+(export '+auto-repeat-mode--off+)
+
+(defconstant +auto-repeat-mode--off+ 0)
+
+(export '+auto-repeat-mode--on+)
+
+(defconstant +auto-repeat-mode--on+ 1)
+
+(export '+auto-repeat-mode--default+)
+
+(defconstant +auto-repeat-mode--default+ 2)
+
+(define-request change-keyboard-control 102
+ ((pad bytes 1) (card32 value-mask)
+  (bitcase value-mask ()
+   ((+kb--key-click-percent+) ((int32 key-click-percent)))
+   ((+kb--bell-percent+) ((int32 bell-percent)))
+   ((+kb--bell-pitch+) ((int32 bell-pitch)))
+   ((+kb--bell-duration+) ((int32 bell-duration))) ((+kb--led+) ((card32 led)))
+   ((+kb--led-mode+) ((card32 led-mode))) ((+kb--key+) ((keycode32 key)))
+   ((+kb--auto-repeat-mode+) ((card32 auto-repeat-mode)))))
+ ())
+
+(define-request get-keyboard-control 103 ()
+ ((byte global-auto-repeat) (card32 led-mask) (card8 key-click-percent)
+  (card8 bell-percent) (card16 bell-pitch) (card16 bell-duration) (pad bytes 2)
+  (list card8 32 auto-repeats)))
+
+(define-request bell 104 ((int8 percent)) ())
+
+(define-request change-pointer-control 105
+ ((pad bytes 1) (int16 acceleration-numerator) (int16 acceleration-denominator)
+  (int16 threshold) (bool do-acceleration) (bool do-threshold))
+ ())
+
+(define-request get-pointer-control 106 ()
+ ((pad bytes 1) (card16 acceleration-numerator)
+  (card16 acceleration-denominator) (card16 threshold) (pad bytes 18)))
+
+(export '+blanking--not-preferred+)
+
+(defconstant +blanking--not-preferred+ 0)
+
+(export '+blanking--preferred+)
+
+(defconstant +blanking--preferred+ 1)
+
+(export '+blanking--default+)
+
+(defconstant +blanking--default+ 2)
+
+(export '+exposures--not-allowed+)
+
+(defconstant +exposures--not-allowed+ 0)
+
+(export '+exposures--allowed+)
+
+(defconstant +exposures--allowed+ 1)
+
+(export '+exposures--default+)
+
+(defconstant +exposures--default+ 2)
+
+(define-request set-screen-saver 107
+ ((pad bytes 1) (int16 timeout) (int16 interval) (card8 prefer-blanking)
+  (card8 allow-exposures))
+ ())
+
+(define-request get-screen-saver 108 ()
+ ((pad bytes 1) (card16 timeout) (card16 interval) (byte prefer-blanking)
+  (byte allow-exposures) (pad bytes 18)))
+
+(export '+host-mode--insert+)
+
+(defconstant +host-mode--insert+ 0)
+
+(export '+host-mode--delete+)
+
+(defconstant +host-mode--delete+ 1)
+
+(export '+family--internet+)
+
+(defconstant +family--internet+ 0)
+
+(export '+family--decnet+)
+
+(defconstant +family--decnet+ 1)
+
+(export '+family--chaos+)
+
+(defconstant +family--chaos+ 2)
+
+(export '+family--server-interpreted+)
+
+(defconstant +family--server-interpreted+ 5)
+
+(export '+family--internet6+)
+
+(defconstant +family--internet6+ 6)
+
+(define-request change-hosts 109
+ ((card8 mode) (card8 family) (pad bytes 1) (card16 address-len)
+  (list byte address-len address))
+ ())
+
+(define-struct host
+ ((card8 family) (pad bytes 1) (card16 address-len)
+  (list byte address-len address) (pad align 4)))
+
+(define-request list-hosts 110 ()
+ ((byte mode) (card16 hosts-len) (pad bytes 22) (list host hosts-len hosts)))
+
+(export '+access-control--disable+)
+
+(defconstant +access-control--disable+ 0)
+
+(export '+access-control--enable+)
+
+(defconstant +access-control--enable+ 1)
+
+(define-request set-access-control 111 ((card8 mode)) ())
+
+(export '+close-down--destroy-all+)
+
+(defconstant +close-down--destroy-all+ 0)
+
+(export '+close-down--retain-permanent+)
+
+(defconstant +close-down--retain-permanent+ 1)
+
+(export '+close-down--retain-temporary+)
+
+(defconstant +close-down--retain-temporary+ 2)
+
+(define-request set-close-down-mode 112 ((card8 mode)) ())
+
+(export '+kill--all-temporary+)
+
+(defconstant +kill--all-temporary+ 0)
+
+(define-request kill-client 113 ((pad bytes 1) (card32 resource)) ())
+
+(define-request rotate-properties 114
+ ((pad bytes 1) (window window) (card16 atoms-len) (int16 delta)
+  (list atom atoms-len atoms))
+ ())
+
+(export '+screen-saver--reset+)
+
+(defconstant +screen-saver--reset+ 0)
+
+(export '+screen-saver--active+)
+
+(defconstant +screen-saver--active+ 1)
+
+(define-request force-screen-saver 115 ((card8 mode)) ())
+
+(export '+mapping-status--success+)
+
+(defconstant +mapping-status--success+ 0)
+
+(export '+mapping-status--busy+)
+
+(defconstant +mapping-status--busy+ 1)
+
+(export '+mapping-status--failure+)
+
+(defconstant +mapping-status--failure+ 2)
+
+(define-request set-pointer-mapping 116
+ ((card8 map-len) (list card8 map-len map)) ((byte status)))
+
+(define-request get-pointer-mapping 117 ()
+ ((card8 map-len) (pad bytes 24) (list card8 map-len map)))
+
+(export '+map-index--shift+)
+
+(defconstant +map-index--shift+ 0)
+
+(export '+map-index--lock+)
+
+(defconstant +map-index--lock+ 1)
+
+(export '+map-index--control+)
+
+(defconstant +map-index--control+ 2)
+
+(export '+map-index--1+)
+
+(defconstant +map-index--1+ 3)
+
+(export '+map-index--2+)
+
+(defconstant +map-index--2+ 4)
+
+(export '+map-index--3+)
+
+(defconstant +map-index--3+ 5)
+
+(export '+map-index--4+)
+
+(defconstant +map-index--4+ 6)
+
+(export '+map-index--5+)
+
+(defconstant +map-index--5+ 7)
+
+(define-request set-modifier-mapping 118
+ ((card8 keycodes-per-modifier)
+  (list keycode (* keycodes-per-modifier 8) keycodes))
+ ((byte status)))
+
+(define-request get-modifier-mapping 119 ()
+ ((card8 keycodes-per-modifier) (pad bytes 24)
+  (list keycode (* keycodes-per-modifier 8) keycodes)))
+
+(define-request no-operation 127 () ())
 

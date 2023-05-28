@@ -1,37 +1,31 @@
 (defpackage :xclhb-source-generator
-  (:use :cl :arrow-macros)
+  (:use :cl)
   (:export :generate))
 
 (in-package :xclhb-source-generator)
 
-(cl-punch:enable-punch-syntax)
+(cl-interpol:enable-interpol-syntax)
 
-(defparameter *extension-source-file-names*
-  '("bigreq.xml" "composite.xml" "damage.xml" "dpms.xml" "dri2.xml" "dri3.xml" "ge.xml" "glx.xml"
-    "present.xml" "randr.xml" "record.xml" "render.xml" "res.xml" "screensaver.xml"
-    "shape.xml" "shm.xml" "sync.xml" "xc_misc.xml" "xevie.xml"
-    "xf86dri.xml" "xf86vidmode.xml" "xfixes.xml" "xinerama.xml" "xinput.xml" "xkb.xml"
-    "xprint.xml" "xselinux.xml" "xtest.xml" "xv.xml" "xvmc.xml"))
+(defvar *header-table* nil)
 
-(defvar *stdout* *standard-output* )
+(defvar *header* nil)
 
-(defvar *event-fields-map* nil)
+(defvar *out* nil)
 
-(defvar *extension-p* nil)
+(defparameter *pre-defined-symbols* '("card8" "card16" "card32" "card64" "int8" "int16" "int32"
+                                      "xid" "char" "byte" "bool" "void"
+                                      "float" "double" "fd"))
 
-(defvar *extension-name* nil)
-
-(defvar *extension-event-readers* nil)
-
-(defvar *extension-error-names* nil)
-
-(defvar *extension-reply-readers* nil)
+(defvar *package-base-name* nil)
 
 (defun assoc-value (name list)
   (second (assoc name list :test #'equal)))
 
 (defun node-attr-value (node attr-name)
   (assoc-value attr-name (xmls:node-attrs node)))
+
+(defun node-attr-value-lispy (node attr-name)
+  (to-lisp-name (assoc-value attr-name (xmls:node-attrs node))))
 
 (defun to-lisp-name (name)
   (with-output-to-string (s)
@@ -48,328 +42,415 @@
                     (t
                      (write-char c s))))))
 
-(defun intern-string (fmt &rest strs)
-  (let* ((value (string-upcase (apply #'format nil fmt (mapcar #'to-lisp-name strs))))
-         (colon-pos (position #\: value)))
-    (intern (if colon-pos
-                (subseq value (+ colon-pos 1))
-                value))))
-
-(defun intern-node-attr (node attr-name)
-  (intern-string "~a" (node-attr-value node attr-name)))
-
 
 (defun node-content (node)
   (car (xmls:node-children node)))
 
-(defun intern-node-content (node)
-  (intern-string "~a" (node-content node)))
+(defun node-content-lispy (node)
+  (to-lisp-name (car (xmls:node-children node))))
 
-(defun write-form (form &optional (out *standard-output*))
-  (format out "~s" form)
-  (terpri out)
-  (terpri out))
+(defun dq (str)
+  (format nil "~s" str))
 
-(defun write-xidtype (node)
-  (write-form
-   (let ((name (intern-node-attr node "name")))
-     `(progn
-        (export ',name)
-        (deftype ,name () 'xid)))))
+(defmacro let-node-slots ((name attrs children) node &body body)
+  (let ((node-sym (gensym)))
+    `(let ((,node-sym ,node))
+       (let ((,name (xmls:node-name ,node-sym))
+             (,attrs (xmls:node-attrs ,node-sym))
+             (,children (xmls:node-children ,node-sym)))
+         (declare (ignorable ,name ,attrs ,children))
+         ,@body))))
 
-(defun write-xidunion (node)
-  (write-form
-   (let ((name (intern-node-attr node "name")))
-     `(progn
-        (export ',name)
-        (deftype ,name ()
-          '(or ,@(mapcar #'intern-node-content (xmls:node-children node))))))))
+(defmacro let-attrs (sym-key-list attrs &body body)
+  (let ((attrs-sym (gensym)))
+    `(let ((,attrs-sym ,attrs))
+       (let ,(loop for (sym key) on sym-key-list by #'cddr
+                   collect `(,sym (assoc-value ,key ,attrs-sym)))
+         ,@body))))
 
-(defun write-typedef (node)
-  (write-form
-   (let ((name (intern-node-attr node "newname")))
-     `(progn
-        (export ',name)
-        (deftype ,name ()
-          ',(intern-node-attr node "oldname"))))))
+(defun make-table (&rest initial-contents)
+  (let ((table (make-hash-table :test #'equal)))
+    (loop for (k v) on initial-contents by #'cddr
+          do (setf (gethash k table) v))
+    table))
 
-;; (defun make-list-length-form (node)
-;;   (if (null node)
-;;       nil
-;;       (str:string-case (xmls:node-name node)
-;;         ("value" (parse-integer (car (xmls:node-children node))))
-;;         ("fieldref" (intern-node-content node))
-;;         ("op" (destructuring-bind (a b) (xmls:node-children node)
-;;                 (list (intern-node-attr node "op")
-;;                       (make-list-length-form a)
-;;                       (make-list-length-form b)))))))
+(defstruct header
+  name extension-name imports symbols
+  extension-event-readers
+  extension-error-names
+  extension-reply-readers
+  event-fields-map)
 
-(defun list-node (node)
-  `(list ,(intern-node-attr node "type")
-         ,(node->field (car (xmls:node-children node)))
-         ,(intern-node-attr node "name")))
+(defun extension-p (&optional (header *header*))
+  (if (header-extension-name header) t nil))
 
-(defun field-node (node)
-  `(,(intern-node-attr node "type") ,(intern-node-attr node "name")))
+(defun register-header (name extension-name)
+  (let ((h (make-header :name name
+                        :extension-name extension-name
+                        :imports (if (equal *package-base-name* name)
+                                     nil
+                                     (list *package-base-name*))
+                        :symbols (make-table))))
+    (setf (gethash name *header-table*) h
+          *header* h)))
 
-(defun pad-node (node)
-  (destructuring-bind (name value) (car (xmls:node-attrs node))
-    `(pad ,(intern-string "~a" name) ,(parse-integer value))))
+(defun add-import (header-name &optional (header *header*))
+  (unless (equal "xproto" header-name)
+    (setf (header-imports header)
+          (append (header-imports header) (list #?"${ *package-base-name* }-${ header-name }" )))))
 
-(defun %write-event (name number fields)
-  (write-form
-   (cond (*extension-p*
-          (push (list 'list number `#',(intern-string "read-~a" name)) *extension-event-readers*)
-          `(define-extension-event ,name ,*extension-name* ,number ,fields))
-         (t
-          `(define-event ,name ,number ,fields)))))
+(defun get-symbol (name &optional (header *header*))
+  (labels ((f (x)
+             (etypecase x
+               (null nil)
+               (header (let ((s (gethash name (header-symbols x))))
+                         (if s
+                             (if (equal (header-name x) (header-name *header*))
+                                 s
+                                 (format nil "~a:~a" (header-name x) s))
+                             (f (header-imports x)))))
+               (cons (or (f (car x)) (f (cdr x))))
+               (string (f (gethash x *header-table*))))))
+    (let ((pos (position #\: name)))
+      (if pos
+          (let ((header-name (subseq name 0 pos)))
+            (get-symbol (subseq name (+ pos 1))
+                        (if (equal header-name "xproto")
+                            *package-base-name*
+                            #?"${ *package-base-name* }-${ header-name }")))
+          (or (f header)
+              (let ((s (find name *pre-defined-symbols* :test #'equal)))
+                (if (equal (header-name *header*) *package-base-name*)
+                    s
+                    #?"${ *package-base-name* }:${ s }")))))))
 
-(defun write-event (node)
-  (let ((name (intern-string "~a" (node-attr-value node "name")))
-        (fields (remove nil
-                        (mapcar (lambda (node)
-                                  (str:string-case (xmls:node-name node)
-                                    ("list" (list-node node))
-                                    ("field" (field-node node))
-                                    ("pad" (pad-node node))
-                                    ("doc" ())))
-                                (xmls:node-children node))))
-        (number (parse-integer (node-attr-value node "number"))))
-    (push (cons name fields) *event-fields-map*)
-    (%write-event name number fields)))
+(defun register-symbol (name &optional (header *header*))
+  (setf (gethash name (header-symbols header)) name))
+
+(defun register-attr-name (attrs &optional (key "name"))
+  (register-symbol (to-lisp-name (assoc-value key attrs))))
+
+(defun convert-value-if-possible (v)
+  (cond ((null v) nil)
+        ((equal v "true") t)
+        ((equal v "false") nil)
+        (t (or (parse-integer v :junk-allowed t) (to-lisp-name v)))))
+
+(defun convert-attr-value-if-possible (attr)
+  (loop for (k v) in attr
+        collect (let ((cv (convert-value-if-possible v)))
+                  (list k (if (equal k "type")
+                              (get-symbol cv)
+                              cv)))))
+
+(defun inner-node-default (node)
+  (let-node-slots (node-name attrs children) node
+    (let ((first-child (car children)))
+      `(,node-name ,(convert-attr-value-if-possible attrs)
+                   ,(if (xmls:node-p first-child)
+                        (mapcar #'process-inner-node children)
+                        (convert-value-if-possible first-child))))))
+
+(defun field-form (node)
+  `(,(get-symbol (node-attr-value-lispy node "type")) ,(node-attr-value-lispy node "name")))
+
+(defun list-from (node)
+  (let ((content (node-content node))
+        (name (node-attr-value-lispy node "name")))
+    `("list" ,(get-symbol (node-attr-value-lispy node "type"))
+             ,(if content (process-inner-node content) `("length" ,name))
+             ,name)))
+
+(defun op-form (node)
+  (let ((op (node-attr-value node "op")))
+    (cons
+     (str:string-case op
+       ("&" "logand")
+       ("~" "lognot")
+       (otherwise op))
+     (mapcar #'process-inner-node (xmls:node-children node)))))
+
+(defun pad-form (node)
+  (let ((bytes (node-attr-value node "bytes"))
+        (align (node-attr-value node "align")))
+    `("pad" ,(if bytes "bytes" "align") ,(parse-integer (or bytes align)))))
+
+(defun enum-constant-name (enum-name item-name)
+  (to-lisp-name (format nil "+~a--~a+" enum-name item-name)))
+
+(defun enumref-form (node)
+  (get-symbol (enum-constant-name (node-attr-value-lispy node "ref")
+                                  (node-content-lispy node))))
+
+(defun enumref-node-p (node)
+  (equal "enumref" (xmls:node-name node)))
 
 
-(defun write-eventcopy (node)
-  (let* ((name (intern-string "~a" (node-attr-value node "name")))
-         (ref (intern-string "~a" (node-attr-value node "ref")))
-         (fields (cdr (assoc ref *event-fields-map*)))
-         (number (parse-integer (node-attr-value node "number"))))
-    (%write-event name number fields)))
+(defun switch-form (node)
+  (let* ((children (xmls:node-children node))
+         (ref (process-inner-node (car children)))
+         (required-start-align (second children))
+         (required-start-align-p (equal "required_start_align" (xmls:node-name required-start-align)))
+         (cases (nthcdr  (if required-start-align-p 2 1) children))
+         (node-name (xmls:node-name (car cases))))
+    `(,(to-lisp-name node-name)
+      ,ref
+      ,(and required-start-align-p `(":align" ,(parse-integer (node-attr-value required-start-align "align"))
+                                             ":offset" ,(or (parse-integer (node-attr-value required-start-align "align") :junk-allowed t) 0)))
+      ,@(mapcar (lambda (node)
+                  (let ((case-children (xmls:node-children node)))
+                    `(,(mapcar #'enumref-form (remove-if-not #'enumref-node-p case-children))
+                      ,(mapcar #'process-inner-node (remove-if #'enumref-node-p case-children)))))
+                cases))))
 
-(defun intern-enum-constant (enum-name item-name)
-  (intern-string "+~a--~a+" enum-name item-name))
+(defun exprfield-form (node)
+  `("aux" ,(field-form node) ,(process-inner-node (first (xmls:node-children node)))))
+
+;; fieldエレメントの type enum属性のみ 名前空間の指定あり
+(defun process-inner-node (node)
+  (let-node-slots (name attrs children) node
+    (str:string-case name
+      ("reply"  nil;; (inner-node-default node)
+       )
+      ;;("item" (inner-node-default node))
+      ("required_start_align" nil ;;(inner-node-default node)
+                              )
+      ;;("type" (inner-node-default node))
+      
+      ("pad" (pad-form node))
+      ("field" (field-form node))
+      ;;("length" (inner-node-default node)) ; xinput
+      ("fd" `(,(get-symbol "card32") ,(node-attr-value-lispy node "name"))) ; randr shm dri3
+      ("list" (list-from node))
+      ("exprfield" (exprfield-form node)) ; QueryTextExtents
+      ;;("valueparam" (inner-node-default node)) ; not used
+      ("switch" (switch-form node))
+      ;;("bitcase" (inner-node-default node))
+      ;;("case" (inner-node-default node))
+      ("op" (op-form node))
+      ("fieldref" (to-lisp-name (node-content node)))
+      ("paramref" nil ;(inner-node-default node)
+                  ) ; xinput DeviceTimeCoord
+      ("value" (parse-integer (node-content node)))
+      ("bit" (parse-integer (node-content node)))
+      ;;("enumref" (inner-node-default node))
+      ("unop" (op-form node))
+      ;;("sumof" (inner-node-default node)) ; xinput xkb
+      ;;("popcount" (inner-node-default node)) ; xinput xkb
+      ;;("listelement-ref" (inner-node-default node)) ; xinput
+      ;; event type selector
+      ;;("allowed" (inner-node-default node))  ; xinput EventForSend
+      ("doc" nil)
+      (otherwise (error "Unknown node ~a." name)))
+    
+    ))
+
+(defun top-level-node-default (node &optional (name "name"))
+  (let-node-slots (node-name attrs children) node
+    (let ((name (to-lisp-name (assoc-value name attrs))))
+      (register-symbol name)
+      `(,node-name ,name ,(mapcar #'process-inner-node children)))))
+
+(defun define-struct-form (node)
+  (let-node-slots (name attrs children) node
+    (let ((name (to-lisp-name (assoc-value "name" attrs))))
+      (register-symbol name)
+      (register-symbol #?"${ name }-length-form")
+      (register-symbol #?"read-${ name }")
+      (register-symbol #?"${ name }-length-form")
+      `(,(if (extension-p)
+             #?"${ *package-base-name* }::define-struct"
+             "define-struct")
+        ,name
+        ,(remove nil (mapcar #'process-inner-node children))))))
+
+(defun deftype-form (name form)
+  (setf name (to-lisp-name name))
+  (register-symbol name)
+  `("progn"
+    ("export" ',name)
+    ("deftype" ,name ()
+               ',form)))
 
 (defun filter-by-tag (tag-name node-list)
   (remove-if-not (lambda (node)
                    (equal (xmls:node-name node) tag-name))
                  node-list))
 
-(defun write-enum (node)
-  (let ((name (node-attr-value node "name")))
-    (mapc (lambda (item)
-            (write-form
-             (let ((name (intern-enum-constant name (node-attr-value item "name"))))
-               `(progn
-                  (export ',name)
-                  (defconstant ,name
-                    ,(parse-integer (node-content (node-content item))))))))
-          (filter-by-tag "item" (xmls:node-children node)))))
+(defun defconstant-form (node)
+  (let ((name (node-attr-value-lispy node "name")))
+    `("progn"
+      ,@(mapcar (lambda (item)
+                  (let ((name (enum-constant-name name (node-attr-value-lispy item "name"))))
+                    (register-symbol name)
+                    `("progn"
+                      ("export" ',name)
+                      ("defconstant" ,name
+                                     ,(parse-integer (node-content (node-content item)))))))
+                (filter-by-tag "item" (xmls:node-children node))))))
 
-
-(defun switch-node (node)
-  (let* ((children (xmls:node-children node))
-         (ref (node->field (car children)))
-         (cases (cdr children))
-         (node-name (xmls:node-name (car cases))))
-    `(,(intern-string "~a" node-name) ,ref
-      ,@(mapcar ^(destructuring-bind (enum-ref &rest fields) (xmls:node-children _)
-                   `(,(intern-enum-constant (node-attr-value enum-ref "ref")
-                                            (node-content enum-ref))
-                     ,@(mapcar #'node->field fields)))
-                cases))))
-
-(defun op-node (node)
-  (let ((op (node-attr-value node "op"))
-        (children (xmls:node-children node)))
-    (list
-     (str:string-case op
-       ("+" '+)
-       ("-" '-)
-       ("*" '*)
-       ("/" '/)
-       ("&" 'logand))
-     (node->field (first children))
-     (node->field (second children)))))
-
-
-(defun unop-node (node)
-  (let ((op (node-attr-value node "op"))
-        (children (xmls:node-children node)))
-    (list
-     (str:string-case op
-       ("~" 'lognot))
-     (node->field (first children)))))
-
-(defun exprfield-node (node)
-  `(aux ,(field-node node) ,(node->field (first (xmls:node-children node)))))
-
-
-(defun node->field (node)
-  (if (null node)
-      nil
-      (str:string-case (xmls:node-name node)
-        ("op" (op-node node))
-        ("unop" (unop-node node))
-        ("value" (parse-integer (car (xmls:node-children node))))
-        ("fieldref" (intern-node-content node))
-        ("exprfield" (exprfield-node node))
-        ("switch" (switch-node node))
-        ("doc" ())
-        ("pad"  (pad-node node))
-        ("field" (field-node node))
-        ("list" (list-node node)))))
-
-(defun reply-node (node)
-  (remove nil
-          (mapcar (lambda (node)
-                    (str:string-case (xmls:node-name node)
-                      ("pad"  (pad-node node))
-                      ("field" (field-node node))
-                      ("list" (list-node node))))
-                  (xmls:node-children node))))
-
-(defun write-request (node)
-  (let* ((name (intern-string "~a" (node-attr-value node "name")))
-         (fields (remove nil
-                         (mapcar #'node->field (xmls:node-children node))))
-         (reply (find-if ^(equal (xmls:node-name _) "reply") (xmls:node-children node)))
-         (reply-fields (and reply (reply-node reply)))
+(defun define-request-form (node)
+  (let* ((name (node-attr-value-lispy node "name"))
+         (children (xmls:node-children node))
+         (fields (remove nil (mapcar #'process-inner-node children)))
+         (reply (find-if (lambda (node) (equal (xmls:node-name node) "reply")) children))
+         (reply-fields (and reply (remove nil (mapcar #'process-inner-node (xmls:node-children reply)))))
          (opcode (parse-integer (node-attr-value node "opcode"))))
-    (write-form
-     (cond (*extension-p*
-            (when reply
-              (push (list 'list  opcode `#',(intern-string "read-~a-reply" name)) *extension-reply-readers*))
-            `(define-extension-request ,name ,*extension-name* ,opcode ,fields ,reply-fields))
-           (t
-            `(define-request ,name ,opcode ,fields ,reply-fields))))))
+    (cond ((extension-p)
+           (when reply
+             (push (list "list"  opcode `#',#?"read-${name}-reply")
+                   (header-extension-reply-readers *header*)))
+           `(,#?"${*package-base-name*}::define-extension-request" ,name
+                "+extension-name+" ,opcode ,fields ,reply-fields))
+          (t
+           `("define-request" ,name ,opcode ,fields ,reply-fields)))))
 
-(defun write-error (node)
-  (let ((name (intern-string "~a" (node-attr-value node "name")))
+(defun %define-event-form (name number fields)
+  (register-symbol name)
+  (cond ((extension-p)
+         (push (list "list" number `#',#?"read-${name}-event") (header-extension-event-readers *header*))
+         `(,#?"${*package-base-name*}::define-extension-event" ,name
+             "+extension-name+" ,number ,fields))
+        (t
+         `("define-event" ,name ,number ,fields))))
+
+(defun define-event-form (node)
+  (let ((name (node-attr-value-lispy node "name"))
+        (fields (remove nil (mapcar #'process-inner-node (xmls:node-children node))))
         (number (parse-integer (node-attr-value node "number"))))
-    (write-form
-     (cond (*extension-p*
-            (push (list 'list number (node-attr-value node "name")) *extension-error-names*)
-            `(define-extension-error ,name ,*extension-name* ,number))
-           (t
-            `(define-error ,name ,number))))))
+    (push (cons name fields) (header-event-fields-map *header*))
+    (%define-event-form name number fields)))
 
-(defun write-struct (node)
-  (write-form
-   `(define-struct ,(intern-string "~a" (node-attr-value node "name"))
-        ,(remove nil
-                 (mapcar (lambda (node)
-                           (str:string-case (xmls:node-name node)
-                             ("pad"  (pad-node node))
-                             ("field" (field-node node))
-                             ("list" (list-node node))))
-                         (xmls:node-children node))))))
+(defun define-eventcopy-from (node)
+  (let* ((name (node-attr-value-lispy node "name"))
+         (ref (node-attr-value-lispy node "ref"))
+         (fields (cdr (assoc ref (header-event-fields-map *header*) :test #'equal)))
+         (number (parse-integer (node-attr-value node "number"))))
+    (%define-event-form name number fields)))
 
-(defun write-xproto (node)
-  (fresh-line)
-  (str:string-case (xmls:node-name node)
-    ("xidtype" (write-xidtype node))
-    ("xidunion" (write-xidunion node))
-    ("typedef" (write-typedef node))
-    ("eventcopy" (write-eventcopy node))
-    ("union" nil)
-    ("event" (write-event node))
-    ("error" (write-error node))
-    ("errorcopy" (write-error node))
-    ("struct" (write-struct node))
-    ("enum" (write-enum node))
-    ("request" (write-request node))
-    (otherwise nil)))
-
-(defun intern-package-name (main-package-name &optional sub-package-name)
-  (intern (string-upcase (if sub-package-name
-                             (format nil "~a-~a" main-package-name sub-package-name)
-                             main-package-name))
-          :keyword))
-
-(defun import-headers (root)
-  (remove "xproto"
-          (mapcar (lambda (node)
-                    (car (xmls:node-children node)))
-                  (remove-if-not (lambda (node)
-                                   (equal (xmls:node-name node) "import"))
-                                 (xmls:node-children root)))
-          :test #'equal))
-
-(defun extension-p (root)
-  (if (node-attr-value root "extension-name") t nil))
-
-(defun defpackage-form (root package-name helper-package-name)
-  (let ((header-name (node-attr-value root "header"))
-        (package (intern-package-name package-name))
-        (helper-package (intern-package-name helper-package-name)))
-    `(uiop:define-package ,(intern-package-name package-name header-name)
-       ,(append `(:use :cl ,package ,helper-package)
-                (mapcar (lambda (name) (intern-package-name package-name name)) (import-headers root)))
-       (:shadowing-import-from ,package :atom :byte :char :format))))
-
-(defun in-package-form (root package-name)
-  `(in-package ,(intern-package-name package-name (if *extension-p* (node-attr-value root "header") nil))))
-
-(defun defsystem-form (root package-name version author license)
-  `(defsystem ,(format nil "~a-~a" package-name (node-attr-value root "header"))
-     :version ,version
-     :author ,author
-     :license ,license
-     :depends-on ,(append `((:version ,package-name ,version)) (import-headers root))
-     :components ((:file ,(node-attr-value root "header")))))
+(defun define-error-form (node)
+  (let ((name (node-attr-value-lispy node "name"))
+        (number (parse-integer (node-attr-value node "number"))))
+    (register-symbol name)
+    (cond ((extension-p)
+           (push (list "list" number (dq (node-attr-value-lispy node "name"))) (header-extension-error-names *header*))
+           `(,#?"${*package-base-name*}::define-extension-error" ,name "+extension-name+" ,number))
+          (t
+           `("define-error" ,name ,number)))))
 
 (defun init-extension-form ()
-  `(progn
-     (export 'init)
-     (defun init (client)
-       (init-extension client ,*extension-name*)
-       (set-extension-event-readers client ,*extension-name* (list ,@*extension-event-readers*))
-       (set-extension-error-names client ,*extension-name* (list ,@*extension-error-names*))
-       (set-extension-reply-readers client ,*extension-name* (list ,@*extension-reply-readers*)))))
+  `("progn"
+    ("export" '"init")
+    ("defun" "init" ("client")
+             (,#?"${ *package-base-name* }::init-extension" "client" "+extension-name+")
+             (,#?"${ *package-base-name* }::set-extension-event-readers" "client" "+extension-name+"
+                 ("list" ,@(header-extension-event-readers *header*)))
+             (,#?"${ *package-base-name* }::set-extension-error-names" "client" "+extension-name+"
+                ("list" ,@(header-extension-error-names *header*)))
+             (,#?"${ *package-base-name* }::set-extension-reply-readers" "client" "+extension-name+"
+                 ("list" ,@(header-extension-reply-readers *header*))))))
 
-(defun %generate-1 (in package-name helper-package-name)
-  (let* ((root (xmls:parse in))
-         (*event-fields-map* nil)
-         (*extension-p* (extension-p root))
-         (*extension-name* (node-attr-value root "extension-xname"))
-         (*extension-event-readers* nil)
-         (*extension-error-names* nil)
-         (*extension-reply-readers* nil))
-    (when *extension-p*
-      (write-form (defpackage-form root package-name helper-package-name)))
-    (write-form (in-package-form root package-name))
-    (mapc #'write-xproto (xmls:node-children root))
-    (when *extension-p*
-      (write-form (init-extension-form))))
-  (values))
+(defun process-top-level-node (node)
+  (let-node-slots (name attrs children) node
+    (str:string-case name
+      ("import" (progn (add-import (node-content node)) nil))
+      ("struct" (define-struct-form node))
+      ;; xproto ClientMessageData, randr xkb
+      ("union" nil ;(top-level-node-default node)
+       ) 
+      ;; xinput
+      ("eventstruct" nil ;(top-level-node-default node)
+       )
+      ("xidtype" (deftype-form (assoc-value "name" attrs) (get-symbol "xid")))
+      ;; ; xproto DRAWABLE FONTABLE, glx DRAWABLE
+      ("xidunion" (deftype-form (assoc-value "name" attrs)
+                      `("or" ,@(mapcar (lambda (node)
+                                         (get-symbol (node-content-lispy node)))
+                                       children)))) 
+      ("enum" (defconstant-form node))
+      ("typedef" (deftype-form (assoc-value "newname" attrs)
+                     (get-symbol (node-attr-value-lispy node "oldname"))))
+      ("request" (define-request-form node))
+      ("event" (define-event-form node))
+      ("error" (define-error-form node))
+      ("eventcopy" (define-eventcopy-from node))
+      ("errorcopy" (define-error-form node))
+      (otherwise (error "Unknown node ~a." name)))))
 
-(defun generate (in-path out-path package-name helper-package-name)
-  (with-open-file (in in-path)
-    (if out-path
-        (with-open-file (out out-path
-                             :direction :output
-                             :if-does-not-exist :create
-                             :if-exists :supersede)
-          (let ((*standard-output* out))
-            (%generate-1 in package-name helper-package-name)))
-        (%generate-1 in  package-name helper-package-name))))
+(defun defsystem-form (name simple-name version author license depends-on )
+  `("defsystem" ,(dq name)
+     ":version" ,(dq version)
+     ":author" ,(dq author)
+     ":license" ,(dq license)
+     ":depends-on" ,(mapcar #'dq depends-on) 
+     ":components" ((":file" ,(dq simple-name)))))
 
-(defun generate-extension (in-base-path out-base-path extension-file-name package-name helper-package-name
-                           version author license)
-  (let ((in-path (format nil "~a/~a"in-base-path extension-file-name)))
-    (with-open-file (in in-path)
-      (let* ((root (xmls:parse in))
-             (extension-name (node-attr-value root "header"))
-             (extension-dir-name (format nil "~a/~a" out-base-path extension-name))
-             (asdf-file-path (format nil "~a/~a-~a.asd" extension-dir-name package-name extension-name))
-             (lisp-file-path (format nil "~a/~a.lisp" extension-dir-name extension-name)))
-        (ensure-directories-exist asdf-file-path)
-        (with-open-file (out asdf-file-path :direction :output :if-exists :supersede)
-          (write-form (defsystem-form root package-name version author license) out))
-        (generate in-path lisp-file-path package-name helper-package-name)))))
 
-(defun generate-extensions (in-base-path out-base-path package-name helper-package-name
-                            version author license)
-  (dolist (name *extension-source-file-names*)
-    (generate-extension in-base-path out-base-path name package-name helper-package-name
-                        version author license)))
+(defun defpackage-form (name)
+  `("uiop:define-package" ,#?":${name}"
+                          (":use" ":cl")
+                          (":import-from" ,#?":${ *package-base-name* }"
+                                          ":pad" ":bytes" ":align" ":bitcase")))
+
+(defun in-package-form (name)
+  `("in-package" ,#?":${name}"))
+
+
+
+(defun process-root-node (node out-dir version author license)
+  (let-node-slots (name attrs children) node
+    (let-attrs (header-name "header" extension-name "extension-xname") attrs
+      (let ((package-name (if (equal "xproto" header-name)
+                              *package-base-name*
+                              #?"${ *package-base-name* }-${ header-name }")))
+        (register-header package-name extension-name)
+        (let ((path #?"${ out-dir }/${ header-name }/${ header-name }.lisp"))
+          (ensure-directories-exist path)
+          (with-open-file (out path :direction :output :if-exists :supersede)
+            (let ((*out* out))
+              (when (extension-p)
+                (write-form (defpackage-form package-name)))
+              (write-form (in-package-form package-name))
+              (when (extension-p)
+                (write-form `(,#?"${ *package-base-name* }:defglobal" "+extension-name+" ,(dq extension-name))))
+              (dolist (node  children)
+                (write-form (process-top-level-node node)))
+              (when (extension-p)
+                (write-form (init-extension-form))))))
+        (when (extension-p)
+          (with-open-file (out #?"${ out-dir }/${ header-name }/${ package-name }.asd"
+                               :direction :output :if-exists :supersede)
+            (let ((*out* out))
+              (write-form
+               (defsystem-form package-name header-name version author license (header-imports *header*))))))))))
+
+(defun write-form (form)
+  (when form
+    (cond ((equal (car form) "progn")
+           (mapc #'write-form (cdr form)))
+          (t
+           (princ form *out*)
+           (terpri *out*)
+           (terpri *out*)))))
+
+(defun generate (src-dir out-dir version author license src-file-names)
+  (let ((*header-table* (make-table))
+        (*out* nil)
+        (*header* nil)
+        (*package-base-name* "xclhb")
+        (*print-pprint-dispatch* (copy-pprint-dispatch)))
+    (set-pprint-dispatch 'null (lambda (s o) (declare (ignore o)) (format s "()")))
+    (dolist (name src-file-names)
+      (with-open-file (in #?"${ src-dir }/${ name }")
+        (let ((root (xmls:parse in)))
+          (process-root-node root out-dir version author license))
+        ;;(print (header-name *header*))
+        ;;(maphash (lambda (k v) (print (list k v))) (header-symbols *header*))
+        ))))
+
+;; 流れ
+;; ファイルを順番に読み込み
+;; ルート要素を読む
+;; トップレベル要素
+;; 内部
+

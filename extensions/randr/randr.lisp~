@@ -1,0 +1,581 @@
+(uiop:define-package :xclhb-randr (:use :cl)
+ (:import-from :xclhb :pad :bytes :align :bitcase))
+
+(in-package :xclhb-randr)
+
+(xclhb:defglobal +extension-name+ "RANDR")
+
+(export 'mode)
+
+(deftype mode () 'xclhb:xid)
+
+(export 'crtc)
+
+(deftype crtc () 'xclhb:xid)
+
+(export 'output)
+
+(deftype output () 'xclhb:xid)
+
+(export 'provider)
+
+(deftype provider () 'xclhb:xid)
+
+(export 'lease)
+
+(deftype lease () 'xclhb:xid)
+
+(xclhb::define-extension-error bad-output +extension-name+ 0)
+
+(xclhb::define-extension-error bad-crtc +extension-name+ 1)
+
+(xclhb::define-extension-error bad-mode +extension-name+ 2)
+
+(xclhb::define-extension-error bad-provider +extension-name+ 3)
+
+(export '+rotation--rotate-0+)
+
+(defconstant +rotation--rotate-0+ 0)
+
+(export '+rotation--rotate-90+)
+
+(defconstant +rotation--rotate-90+ 1)
+
+(export '+rotation--rotate-180+)
+
+(defconstant +rotation--rotate-180+ 2)
+
+(export '+rotation--rotate-270+)
+
+(defconstant +rotation--rotate-270+ 3)
+
+(export '+rotation--reflect-x+)
+
+(defconstant +rotation--reflect-x+ 4)
+
+(export '+rotation--reflect-y+)
+
+(defconstant +rotation--reflect-y+ 5)
+
+(xclhb::define-struct screen-size
+ ((xclhb:card16 width) (xclhb:card16 height) (xclhb:card16 mwidth)
+  (xclhb:card16 mheight)))
+
+(xclhb::define-struct refresh-rates
+ ((xclhb:card16 n-rates) (list xclhb:card16 n-rates rates)))
+
+(xclhb::define-extension-request query-version +extension-name+ 0
+ ((xclhb:card32 major-version) (xclhb:card32 minor-version))
+ ((pad bytes 1) (xclhb:card32 major-version) (xclhb:card32 minor-version)
+  (pad bytes 16)))
+
+(export '+set-config--success+)
+
+(defconstant +set-config--success+ 0)
+
+(export '+set-config--invalid-config-time+)
+
+(defconstant +set-config--invalid-config-time+ 1)
+
+(export '+set-config--invalid-time+)
+
+(defconstant +set-config--invalid-time+ 2)
+
+(export '+set-config--failed+)
+
+(defconstant +set-config--failed+ 3)
+
+(xclhb::define-extension-request set-screen-config +extension-name+ 2
+ ((xclhb:window window) (xclhb:timestamp timestamp)
+  (xclhb:timestamp config-timestamp) (xclhb:card16 size-id)
+  (xclhb:card16 rotation) (xclhb:card16 rate) (pad bytes 2))
+ ((xclhb:card8 status) (xclhb:timestamp new-timestamp)
+  (xclhb:timestamp config-timestamp) (xclhb:window root)
+  (xclhb:card16 subpixel-order) (pad bytes 10)))
+
+(export '+notify-mask--screen-change+)
+
+(defconstant +notify-mask--screen-change+ 0)
+
+(export '+notify-mask--crtc-change+)
+
+(defconstant +notify-mask--crtc-change+ 1)
+
+(export '+notify-mask--output-change+)
+
+(defconstant +notify-mask--output-change+ 2)
+
+(export '+notify-mask--output-property+)
+
+(defconstant +notify-mask--output-property+ 3)
+
+(export '+notify-mask--provider-change+)
+
+(defconstant +notify-mask--provider-change+ 4)
+
+(export '+notify-mask--provider-property+)
+
+(defconstant +notify-mask--provider-property+ 5)
+
+(export '+notify-mask--resource-change+)
+
+(defconstant +notify-mask--resource-change+ 6)
+
+(export '+notify-mask--lease+)
+
+(defconstant +notify-mask--lease+ 7)
+
+(xclhb::define-extension-request select-input +extension-name+ 4
+ ((xclhb:window window) (xclhb:card16 enable) (pad bytes 2)) ())
+
+(xclhb::define-extension-request get-screen-info +extension-name+ 5
+ ((xclhb:window window))
+ ((xclhb:card8 rotations) (xclhb:window root) (xclhb:timestamp timestamp)
+  (xclhb:timestamp config-timestamp) (xclhb:card16 n-sizes)
+  (xclhb:card16 size-id) (xclhb:card16 rotation) (xclhb:card16 rate)
+  (xclhb:card16 n-info) (pad bytes 2) (list screen-size n-sizes sizes)
+  (list refresh-rates (- n-info n-sizes) rates)))
+
+(xclhb::define-extension-request get-screen-size-range +extension-name+ 6
+ ((xclhb:window window))
+ ((pad bytes 1) (xclhb:card16 min-width) (xclhb:card16 min-height)
+  (xclhb:card16 max-width) (xclhb:card16 max-height) (pad bytes 16)))
+
+(xclhb::define-extension-request set-screen-size +extension-name+ 7
+ ((xclhb:window window) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card32 mm-width) (xclhb:card32 mm-height))
+ ())
+
+(export '+mode-flag--hsync-positive+)
+
+(defconstant +mode-flag--hsync-positive+ 0)
+
+(export '+mode-flag--hsync-negative+)
+
+(defconstant +mode-flag--hsync-negative+ 1)
+
+(export '+mode-flag--vsync-positive+)
+
+(defconstant +mode-flag--vsync-positive+ 2)
+
+(export '+mode-flag--vsync-negative+)
+
+(defconstant +mode-flag--vsync-negative+ 3)
+
+(export '+mode-flag--interlace+)
+
+(defconstant +mode-flag--interlace+ 4)
+
+(export '+mode-flag--double-scan+)
+
+(defconstant +mode-flag--double-scan+ 5)
+
+(export '+mode-flag--csync+)
+
+(defconstant +mode-flag--csync+ 6)
+
+(export '+mode-flag--csync-positive+)
+
+(defconstant +mode-flag--csync-positive+ 7)
+
+(export '+mode-flag--csync-negative+)
+
+(defconstant +mode-flag--csync-negative+ 8)
+
+(export '+mode-flag--hskew-present+)
+
+(defconstant +mode-flag--hskew-present+ 9)
+
+(export '+mode-flag--bcast+)
+
+(defconstant +mode-flag--bcast+ 10)
+
+(export '+mode-flag--pixel-multiplex+)
+
+(defconstant +mode-flag--pixel-multiplex+ 11)
+
+(export '+mode-flag--double-clock+)
+
+(defconstant +mode-flag--double-clock+ 12)
+
+(export '+mode-flag--halve-clock+)
+
+(defconstant +mode-flag--halve-clock+ 13)
+
+(xclhb::define-struct mode-info
+ ((xclhb:card32 id) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card32 dot-clock) (xclhb:card16 hsync-start) (xclhb:card16 hsync-end)
+  (xclhb:card16 htotal) (xclhb:card16 hskew) (xclhb:card16 vsync-start)
+  (xclhb:card16 vsync-end) (xclhb:card16 vtotal) (xclhb:card16 name-len)
+  (xclhb:card32 mode-flags)))
+
+(xclhb::define-extension-request get-screen-resources +extension-name+ 8
+ ((xclhb:window window))
+ ((pad bytes 1) (xclhb:timestamp timestamp) (xclhb:timestamp config-timestamp)
+  (xclhb:card16 num-crtcs) (xclhb:card16 num-outputs) (xclhb:card16 num-modes)
+  (xclhb:card16 names-len) (pad bytes 8) (list crtc num-crtcs crtcs)
+  (list output num-outputs outputs) (list mode-info num-modes modes)
+  (list xclhb:byte names-len names)))
+
+(export '+connection--connected+)
+
+(defconstant +connection--connected+ 0)
+
+(export '+connection--disconnected+)
+
+(defconstant +connection--disconnected+ 1)
+
+(export '+connection--unknown+)
+
+(defconstant +connection--unknown+ 2)
+
+(xclhb::define-extension-request get-output-info +extension-name+ 9
+ ((output output) (xclhb:timestamp config-timestamp))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp) (crtc crtc)
+  (xclhb:card32 mm-width) (xclhb:card32 mm-height) (xclhb:card8 connection)
+  (xclhb:card8 subpixel-order) (xclhb:card16 num-crtcs)
+  (xclhb:card16 num-modes) (xclhb:card16 num-preferred)
+  (xclhb:card16 num-clones) (xclhb:card16 name-len) (list crtc num-crtcs crtcs)
+  (list mode num-modes modes) (list output num-clones clones)
+  (list xclhb:byte name-len name)))
+
+(xclhb::define-extension-request list-output-properties +extension-name+ 10
+ ((output output))
+ ((pad bytes 1) (xclhb:card16 num-atoms) (pad bytes 22)
+  (list xclhb:atom num-atoms atoms)))
+
+(xclhb::define-extension-request query-output-property +extension-name+ 11
+ ((output output) (xclhb:atom property))
+ ((pad bytes 1) (xclhb:bool pending) (xclhb:bool range) (xclhb:bool immutable)
+  (pad bytes 21) (list xclhb:int32 length valid-values)))
+
+(xclhb::define-extension-request configure-output-property +extension-name+ 12
+ ((output output) (xclhb:atom property) (xclhb:bool pending) (xclhb:bool range)
+  (pad bytes 2) (list xclhb:int32 (length values) values))
+ ())
+
+(xclhb::define-extension-request change-output-property +extension-name+ 13
+ ((output output) (xclhb:atom property) (xclhb:atom type) (xclhb:card8 format)
+  (xclhb:card8 mode) (pad bytes 2) (xclhb:card32 num-units)
+  (list xclhb:void (/ (* num-units format) 8) data))
+ ())
+
+(xclhb::define-extension-request delete-output-property +extension-name+ 14
+ ((output output) (xclhb:atom property)) ())
+
+(xclhb::define-extension-request get-output-property +extension-name+ 15
+ ((output output) (xclhb:atom property) (xclhb:atom type)
+  (xclhb:card32 long-offset) (xclhb:card32 long-length) (xclhb:bool delete)
+  (xclhb:bool pending) (pad bytes 2))
+ ((xclhb:card8 format) (xclhb:atom type) (xclhb:card32 bytes-after)
+  (xclhb:card32 num-items) (pad bytes 12)
+  (list xclhb:byte (* num-items (/ format 8)) data)))
+
+(xclhb::define-extension-request create-mode +extension-name+ 16
+ ((xclhb:window window) (mode-info mode-info)
+  (list xclhb:char (length name) name))
+ ((pad bytes 1) (mode mode) (pad bytes 20)))
+
+(xclhb::define-extension-request destroy-mode +extension-name+ 17 ((mode mode))
+ ())
+
+(xclhb::define-extension-request add-output-mode +extension-name+ 18
+ ((output output) (mode mode)) ())
+
+(xclhb::define-extension-request delete-output-mode +extension-name+ 19
+ ((output output) (mode mode)) ())
+
+(xclhb::define-extension-request get-crtc-info +extension-name+ 20
+ ((crtc crtc) (xclhb:timestamp config-timestamp))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp) (xclhb:int16 x)
+  (xclhb:int16 y) (xclhb:card16 width) (xclhb:card16 height) (mode mode)
+  (xclhb:card16 rotation) (xclhb:card16 rotations) (xclhb:card16 num-outputs)
+  (xclhb:card16 num-possible-outputs) (list output num-outputs outputs)
+  (list output num-possible-outputs possible)))
+
+(xclhb::define-extension-request set-crtc-config +extension-name+ 21
+ ((crtc crtc) (xclhb:timestamp timestamp) (xclhb:timestamp config-timestamp)
+  (xclhb:int16 x) (xclhb:int16 y) (mode mode) (xclhb:card16 rotation)
+  (pad bytes 2) (list output (length outputs) outputs))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp) (pad bytes 20)))
+
+(xclhb::define-extension-request get-crtc-gamma-size +extension-name+ 22
+ ((crtc crtc)) ((pad bytes 1) (xclhb:card16 size) (pad bytes 22)))
+
+(xclhb::define-extension-request get-crtc-gamma +extension-name+ 23
+ ((crtc crtc))
+ ((pad bytes 1) (xclhb:card16 size) (pad bytes 22) (list xclhb:card16 size red)
+  (list xclhb:card16 size green) (list xclhb:card16 size blue)))
+
+(xclhb::define-extension-request set-crtc-gamma +extension-name+ 24
+ ((crtc crtc) (xclhb:card16 size) (pad bytes 2) (list xclhb:card16 size red)
+  (list xclhb:card16 size green) (list xclhb:card16 size blue))
+ ())
+
+(xclhb::define-extension-request get-screen-resources-current +extension-name+
+ 25 ((xclhb:window window))
+ ((pad bytes 1) (xclhb:timestamp timestamp) (xclhb:timestamp config-timestamp)
+  (xclhb:card16 num-crtcs) (xclhb:card16 num-outputs) (xclhb:card16 num-modes)
+  (xclhb:card16 names-len) (pad bytes 8) (list crtc num-crtcs crtcs)
+  (list output num-outputs outputs) (list mode-info num-modes modes)
+  (list xclhb:byte names-len names)))
+
+(export '+transform--unit+)
+
+(defconstant +transform--unit+ 0)
+
+(export '+transform--scale-up+)
+
+(defconstant +transform--scale-up+ 1)
+
+(export '+transform--scale-down+)
+
+(defconstant +transform--scale-down+ 2)
+
+(export '+transform--projective+)
+
+(defconstant +transform--projective+ 3)
+
+(xclhb::define-extension-request set-crtc-transform +extension-name+ 26
+ ((crtc crtc) (xclhb-render:transform transform) (xclhb:card16 filter-len)
+  (pad bytes 2) (list xclhb:char filter-len filter-name) (pad align 4)
+  (list xclhb-render:fixed (length filter-params) filter-params))
+ ())
+
+(xclhb::define-extension-request get-crtc-transform +extension-name+ 27
+ ((crtc crtc))
+ ((pad bytes 1) (xclhb-render:transform pending-transform)
+  (xclhb:bool has-transforms) (pad bytes 3)
+  (xclhb-render:transform current-transform) (pad bytes 4)
+  (xclhb:card16 pending-len) (xclhb:card16 pending-nparams)
+  (xclhb:card16 current-len) (xclhb:card16 current-nparams)
+  (list xclhb:char pending-len pending-filter-name) (pad align 4)
+  (list xclhb-render:fixed pending-nparams pending-params)
+  (list xclhb:char current-len current-filter-name) (pad align 4)
+  (list xclhb-render:fixed current-nparams current-params)))
+
+(xclhb::define-extension-request get-panning +extension-name+ 28 ((crtc crtc))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp) (xclhb:card16 left)
+  (xclhb:card16 top) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card16 track-left) (xclhb:card16 track-top) (xclhb:card16 track-width)
+  (xclhb:card16 track-height) (xclhb:int16 border-left)
+  (xclhb:int16 border-top) (xclhb:int16 border-right)
+  (xclhb:int16 border-bottom)))
+
+(xclhb::define-extension-request set-panning +extension-name+ 29
+ ((crtc crtc) (xclhb:timestamp timestamp) (xclhb:card16 left)
+  (xclhb:card16 top) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card16 track-left) (xclhb:card16 track-top) (xclhb:card16 track-width)
+  (xclhb:card16 track-height) (xclhb:int16 border-left)
+  (xclhb:int16 border-top) (xclhb:int16 border-right)
+  (xclhb:int16 border-bottom))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp)))
+
+(xclhb::define-extension-request set-output-primary +extension-name+ 30
+ ((xclhb:window window) (output output)) ())
+
+(xclhb::define-extension-request get-output-primary +extension-name+ 31
+ ((xclhb:window window)) ((pad bytes 1) (output output)))
+
+(xclhb::define-extension-request get-providers +extension-name+ 32
+ ((xclhb:window window))
+ ((pad bytes 1) (xclhb:timestamp timestamp) (xclhb:card16 num-providers)
+  (pad bytes 18) (list provider num-providers providers)))
+
+(export '+provider-capability--source-output+)
+
+(defconstant +provider-capability--source-output+ 0)
+
+(export '+provider-capability--sink-output+)
+
+(defconstant +provider-capability--sink-output+ 1)
+
+(export '+provider-capability--source-offload+)
+
+(defconstant +provider-capability--source-offload+ 2)
+
+(export '+provider-capability--sink-offload+)
+
+(defconstant +provider-capability--sink-offload+ 3)
+
+(xclhb::define-extension-request get-provider-info +extension-name+ 33
+ ((provider provider) (xclhb:timestamp config-timestamp))
+ ((xclhb:card8 status) (xclhb:timestamp timestamp) (xclhb:card32 capabilities)
+  (xclhb:card16 num-crtcs) (xclhb:card16 num-outputs)
+  (xclhb:card16 num-associated-providers) (xclhb:card16 name-len) (pad bytes 8)
+  (list crtc num-crtcs crtcs) (list output num-outputs outputs)
+  (list provider num-associated-providers associated-providers)
+  (list xclhb:card32 num-associated-providers associated-capability)
+  (list xclhb:char name-len name)))
+
+(xclhb::define-extension-request set-provider-offload-sink +extension-name+ 34
+ ((provider provider) (provider sink-provider)
+  (xclhb:timestamp config-timestamp))
+ ())
+
+(xclhb::define-extension-request set-provider-output-source +extension-name+ 35
+ ((provider provider) (provider source-provider)
+  (xclhb:timestamp config-timestamp))
+ ())
+
+(xclhb::define-extension-request list-provider-properties +extension-name+ 36
+ ((provider provider))
+ ((pad bytes 1) (xclhb:card16 num-atoms) (pad bytes 22)
+  (list xclhb:atom num-atoms atoms)))
+
+(xclhb::define-extension-request query-provider-property +extension-name+ 37
+ ((provider provider) (xclhb:atom property))
+ ((pad bytes 1) (xclhb:bool pending) (xclhb:bool range) (xclhb:bool immutable)
+  (pad bytes 21) (list xclhb:int32 length valid-values)))
+
+(xclhb::define-extension-request configure-provider-property +extension-name+
+ 38
+ ((provider provider) (xclhb:atom property) (xclhb:bool pending)
+  (xclhb:bool range) (pad bytes 2) (list xclhb:int32 (length values) values))
+ ())
+
+(xclhb::define-extension-request change-provider-property +extension-name+ 39
+ ((provider provider) (xclhb:atom property) (xclhb:atom type)
+  (xclhb:card8 format) (xclhb:card8 mode) (pad bytes 2)
+  (xclhb:card32 num-items) (list xclhb:void (* num-items (/ format 8)) data))
+ ())
+
+(xclhb::define-extension-request delete-provider-property +extension-name+ 40
+ ((provider provider) (xclhb:atom property)) ())
+
+(xclhb::define-extension-request get-provider-property +extension-name+ 41
+ ((provider provider) (xclhb:atom property) (xclhb:atom type)
+  (xclhb:card32 long-offset) (xclhb:card32 long-length) (xclhb:bool delete)
+  (xclhb:bool pending) (pad bytes 2))
+ ((xclhb:card8 format) (xclhb:atom type) (xclhb:card32 bytes-after)
+  (xclhb:card32 num-items) (pad bytes 12)
+  (list xclhb:void (* num-items (/ format 8)) data)))
+
+(xclhb::define-extension-event screen-change-notify +extension-name+ 0
+ ((xclhb:card8 rotation) (xclhb:timestamp timestamp)
+  (xclhb:timestamp config-timestamp) (xclhb:window root)
+  (xclhb:window request-window) (xclhb:card16 size-id)
+  (xclhb:card16 subpixel-order) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card16 mwidth) (xclhb:card16 mheight)))
+
+(export '+notify--crtc-change+)
+
+(defconstant +notify--crtc-change+ 0)
+
+(export '+notify--output-change+)
+
+(defconstant +notify--output-change+ 1)
+
+(export '+notify--output-property+)
+
+(defconstant +notify--output-property+ 2)
+
+(export '+notify--provider-change+)
+
+(defconstant +notify--provider-change+ 3)
+
+(export '+notify--provider-property+)
+
+(defconstant +notify--provider-property+ 4)
+
+(export '+notify--resource-change+)
+
+(defconstant +notify--resource-change+ 5)
+
+(export '+notify--lease+)
+
+(defconstant +notify--lease+ 6)
+
+(xclhb::define-struct crtc-change
+ ((xclhb:timestamp timestamp) (xclhb:window window) (crtc crtc) (mode mode)
+  (xclhb:card16 rotation) (pad bytes 2) (xclhb:int16 x) (xclhb:int16 y)
+  (xclhb:card16 width) (xclhb:card16 height)))
+
+(xclhb::define-struct output-change
+ ((xclhb:timestamp timestamp) (xclhb:timestamp config-timestamp)
+  (xclhb:window window) (output output) (crtc crtc) (mode mode)
+  (xclhb:card16 rotation) (xclhb:card8 connection)
+  (xclhb:card8 subpixel-order)))
+
+(xclhb::define-struct output-property
+ ((xclhb:window window) (output output) (xclhb:atom atom)
+  (xclhb:timestamp timestamp) (xclhb:card8 status) (pad bytes 11)))
+
+(xclhb::define-struct provider-change
+ ((xclhb:timestamp timestamp) (xclhb:window window) (provider provider)
+  (pad bytes 16)))
+
+(xclhb::define-struct provider-property
+ ((xclhb:window window) (provider provider) (xclhb:atom atom)
+  (xclhb:timestamp timestamp) (xclhb:card8 state) (pad bytes 11)))
+
+(xclhb::define-struct resource-change
+ ((xclhb:timestamp timestamp) (xclhb:window window) (pad bytes 20)))
+
+(xclhb::define-struct monitor-info
+ ((xclhb:atom name) (xclhb:bool primary) (xclhb:bool automatic)
+  (xclhb:card16 n-output) (xclhb:int16 x) (xclhb:int16 y) (xclhb:card16 width)
+  (xclhb:card16 height) (xclhb:card32 width-in-millimeters)
+  (xclhb:card32 height-in-millimeters) (list output n-output outputs)))
+
+(xclhb::define-extension-request get-monitors +extension-name+ 42
+ ((xclhb:window window) (xclhb:bool get-active))
+ ((pad bytes 1) (xclhb:timestamp timestamp) (xclhb:card32 n-monitors)
+  (xclhb:card32 n-outputs) (pad bytes 12)
+  (list monitor-info n-monitors monitors)))
+
+(xclhb::define-extension-request set-monitor +extension-name+ 43
+ ((xclhb:window window) (monitor-info monitorinfo)) ())
+
+(xclhb::define-extension-request delete-monitor +extension-name+ 44
+ ((xclhb:window window) (xclhb:atom name)) ())
+
+(xclhb::define-extension-request create-lease +extension-name+ 45
+ ((xclhb:window window) (lease lid) (xclhb:card16 num-crtcs)
+  (xclhb:card16 num-outputs) (list crtc num-crtcs crtcs)
+  (list output num-outputs outputs))
+ ((xclhb:card8 nfd) (xclhb:card32 master-fd) (pad bytes 24)))
+
+(xclhb::define-extension-request free-lease +extension-name+ 46
+ ((lease lid) (xclhb:byte terminate)) ())
+
+(xclhb::define-struct lease-notify
+ ((xclhb:timestamp timestamp) (xclhb:window window) (lease lease)
+  (xclhb:card8 created) (pad bytes 15)))
+
+(xclhb::define-extension-event notify +extension-name+ 1
+ ((xclhb:card8 sub-code) (xclhb:() u)))
+
+(export 'init)
+
+(defun init (client) (xclhb::init-extension client +extension-name+)
+ (xclhb::set-extension-event-readers client +extension-name+
+  (list (list 1 #'read-notify-event)
+   (list 0 #'read-screen-change-notify-event)))
+ (xclhb::set-extension-error-names client +extension-name+
+  (list (list 3 "bad-provider") (list 2 "bad-mode") (list 1 "bad-crtc")
+   (list 0 "bad-output")))
+ (xclhb::set-extension-reply-readers client +extension-name+
+  (list (list 45 #'read-create-lease-reply) (list 42 #'read-get-monitors-reply)
+   (list 41 #'read-get-provider-property-reply)
+   (list 37 #'read-query-provider-property-reply)
+   (list 36 #'read-list-provider-properties-reply)
+   (list 33 #'read-get-provider-info-reply)
+   (list 32 #'read-get-providers-reply)
+   (list 31 #'read-get-output-primary-reply) (list 29 #'read-set-panning-reply)
+   (list 28 #'read-get-panning-reply) (list 27 #'read-get-crtc-transform-reply)
+   (list 25 #'read-get-screen-resources-current-reply)
+   (list 23 #'read-get-crtc-gamma-reply)
+   (list 22 #'read-get-crtc-gamma-size-reply)
+   (list 21 #'read-set-crtc-config-reply) (list 20 #'read-get-crtc-info-reply)
+   (list 16 #'read-create-mode-reply)
+   (list 15 #'read-get-output-property-reply)
+   (list 11 #'read-query-output-property-reply)
+   (list 10 #'read-list-output-properties-reply)
+   (list 9 #'read-get-output-info-reply)
+   (list 8 #'read-get-screen-resources-reply)
+   (list 6 #'read-get-screen-size-range-reply)
+   (list 5 #'read-get-screen-info-reply)
+   (list 2 #'read-set-screen-config-reply)
+   (list 0 #'read-query-version-reply))))
+

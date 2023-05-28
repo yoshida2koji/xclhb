@@ -1,0 +1,281 @@
+(uiop:define-package :xclhb-xv (:use :cl)
+ (:import-from :xclhb :pad :bytes :align :bitcase))
+
+(in-package :xclhb-xv)
+
+(xclhb:defglobal +extension-name+ "XVideo")
+
+(export 'port)
+
+(deftype port () 'xclhb:xid)
+
+(export 'encoding)
+
+(deftype encoding () 'xclhb:xid)
+
+(export '+type--input-mask+)
+
+(defconstant +type--input-mask+ 0)
+
+(export '+type--output-mask+)
+
+(defconstant +type--output-mask+ 1)
+
+(export '+type--video-mask+)
+
+(defconstant +type--video-mask+ 2)
+
+(export '+type--still-mask+)
+
+(defconstant +type--still-mask+ 3)
+
+(export '+type--image-mask+)
+
+(defconstant +type--image-mask+ 4)
+
+(export '+image-format-info-type--rgb+)
+
+(defconstant +image-format-info-type--rgb+ 0)
+
+(export '+image-format-info-type--yuv+)
+
+(defconstant +image-format-info-type--yuv+ 1)
+
+(export '+image-format-info-format--packed+)
+
+(defconstant +image-format-info-format--packed+ 0)
+
+(export '+image-format-info-format--planar+)
+
+(defconstant +image-format-info-format--planar+ 1)
+
+(export '+attribute-flag--gettable+)
+
+(defconstant +attribute-flag--gettable+ 0)
+
+(export '+attribute-flag--settable+)
+
+(defconstant +attribute-flag--settable+ 1)
+
+(export '+video-notify-reason--started+)
+
+(defconstant +video-notify-reason--started+ 0)
+
+(export '+video-notify-reason--stopped+)
+
+(defconstant +video-notify-reason--stopped+ 1)
+
+(export '+video-notify-reason--busy+)
+
+(defconstant +video-notify-reason--busy+ 2)
+
+(export '+video-notify-reason--preempted+)
+
+(defconstant +video-notify-reason--preempted+ 3)
+
+(export '+video-notify-reason--hard-error+)
+
+(defconstant +video-notify-reason--hard-error+ 4)
+
+(export '+scanline-order--top-to-bottom+)
+
+(defconstant +scanline-order--top-to-bottom+ 0)
+
+(export '+scanline-order--bottom-to-top+)
+
+(defconstant +scanline-order--bottom-to-top+ 1)
+
+(export '+grab-port-status--success+)
+
+(defconstant +grab-port-status--success+ 0)
+
+(export '+grab-port-status--bad-extension+)
+
+(defconstant +grab-port-status--bad-extension+ 1)
+
+(export '+grab-port-status--already-grabbed+)
+
+(defconstant +grab-port-status--already-grabbed+ 2)
+
+(export '+grab-port-status--invalid-time+)
+
+(defconstant +grab-port-status--invalid-time+ 3)
+
+(export '+grab-port-status--bad-reply+)
+
+(defconstant +grab-port-status--bad-reply+ 4)
+
+(export '+grab-port-status--bad-alloc+)
+
+(defconstant +grab-port-status--bad-alloc+ 5)
+
+(xclhb::define-struct rational
+ ((xclhb:int32 numerator) (xclhb:int32 denominator)))
+
+(xclhb::define-struct format
+ ((xclhb:visualid visual) (xclhb:card8 depth) (pad bytes 3)))
+
+(xclhb::define-struct adaptor-info
+ ((port base-id) (xclhb:card16 name-size) (xclhb:card16 num-ports)
+  (xclhb:card16 num-formats) (xclhb:card8 type) (pad bytes 1)
+  (list xclhb:char name-size name) (pad align 4)
+  (list format num-formats formats)))
+
+(xclhb::define-struct encoding-info
+ ((encoding encoding) (xclhb:card16 name-size) (xclhb:card16 width)
+  (xclhb:card16 height) (pad bytes 2) (rational rate)
+  (list xclhb:char name-size name) (pad align 4)))
+
+(xclhb::define-struct image
+ ((xclhb:card32 id) (xclhb:card16 width) (xclhb:card16 height)
+  (xclhb:card32 data-size) (xclhb:card32 num-planes)
+  (list xclhb:card32 num-planes pitches) (list xclhb:card32 num-planes offsets)
+  (list xclhb:card8 data-size data)))
+
+(xclhb::define-struct attribute-info
+ ((xclhb:card32 flags) (xclhb:int32 min) (xclhb:int32 max) (xclhb:card32 size)
+  (list xclhb:char size name) (pad align 4)))
+
+(xclhb::define-struct image-format-info
+ ((xclhb:card32 id) (xclhb:card8 type) (xclhb:card8 byte-order) (pad bytes 2)
+  (list xclhb:card8 16 guid) (xclhb:card8 bpp) (xclhb:card8 num-planes)
+  (pad bytes 2) (xclhb:card8 depth) (pad bytes 3) (xclhb:card32 red-mask)
+  (xclhb:card32 green-mask) (xclhb:card32 blue-mask) (xclhb:card8 format)
+  (pad bytes 3) (xclhb:card32 y-sample-bits) (xclhb:card32 u-sample-bits)
+  (xclhb:card32 v-sample-bits) (xclhb:card32 vhorz-y-period)
+  (xclhb:card32 vhorz-u-period) (xclhb:card32 vhorz-v-period)
+  (xclhb:card32 vvert-y-period) (xclhb:card32 vvert-u-period)
+  (xclhb:card32 vvert-v-period) (list xclhb:card8 32 vcomp-order)
+  (xclhb:card8 vscanline-order) (pad bytes 11)))
+
+(xclhb::define-extension-error bad-port +extension-name+ 0)
+
+(xclhb::define-extension-error bad-encoding +extension-name+ 1)
+
+(xclhb::define-extension-error bad-control +extension-name+ 2)
+
+(xclhb::define-extension-event video-notify +extension-name+ 0
+ ((xclhb:byte reason) (xclhb:timestamp time) (xclhb:drawable drawable)
+  (port port)))
+
+(xclhb::define-extension-event port-notify +extension-name+ 1
+ ((pad bytes 1) (xclhb:timestamp time) (port port) (xclhb:atom attribute)
+  (xclhb:int32 value)))
+
+(xclhb::define-extension-request query-extension +extension-name+ 0 ()
+ ((pad bytes 1) (xclhb:card16 major) (xclhb:card16 minor)))
+
+(xclhb::define-extension-request query-adaptors +extension-name+ 1
+ ((xclhb:window window))
+ ((pad bytes 1) (xclhb:card16 num-adaptors) (pad bytes 22)
+  (list adaptor-info num-adaptors info)))
+
+(xclhb::define-extension-request query-encodings +extension-name+ 2
+ ((port port))
+ ((pad bytes 1) (xclhb:card16 num-encodings) (pad bytes 22)
+  (list encoding-info num-encodings info)))
+
+(xclhb::define-extension-request grab-port +extension-name+ 3
+ ((port port) (xclhb:timestamp time)) ((xclhb:byte result)))
+
+(xclhb::define-extension-request ungrab-port +extension-name+ 4
+ ((port port) (xclhb:timestamp time)) ())
+
+(xclhb::define-extension-request put-video +extension-name+ 5
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc) (xclhb:int16 vid-x)
+  (xclhb:int16 vid-y) (xclhb:card16 vid-w) (xclhb:card16 vid-h)
+  (xclhb:int16 drw-x) (xclhb:int16 drw-y) (xclhb:card16 drw-w)
+  (xclhb:card16 drw-h))
+ ())
+
+(xclhb::define-extension-request put-still +extension-name+ 6
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc) (xclhb:int16 vid-x)
+  (xclhb:int16 vid-y) (xclhb:card16 vid-w) (xclhb:card16 vid-h)
+  (xclhb:int16 drw-x) (xclhb:int16 drw-y) (xclhb:card16 drw-w)
+  (xclhb:card16 drw-h))
+ ())
+
+(xclhb::define-extension-request get-video +extension-name+ 7
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc) (xclhb:int16 vid-x)
+  (xclhb:int16 vid-y) (xclhb:card16 vid-w) (xclhb:card16 vid-h)
+  (xclhb:int16 drw-x) (xclhb:int16 drw-y) (xclhb:card16 drw-w)
+  (xclhb:card16 drw-h))
+ ())
+
+(xclhb::define-extension-request get-still +extension-name+ 8
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc) (xclhb:int16 vid-x)
+  (xclhb:int16 vid-y) (xclhb:card16 vid-w) (xclhb:card16 vid-h)
+  (xclhb:int16 drw-x) (xclhb:int16 drw-y) (xclhb:card16 drw-w)
+  (xclhb:card16 drw-h))
+ ())
+
+(xclhb::define-extension-request stop-video +extension-name+ 9
+ ((port port) (xclhb:drawable drawable)) ())
+
+(xclhb::define-extension-request select-video-notify +extension-name+ 10
+ ((xclhb:drawable drawable) (xclhb:bool onoff) (pad bytes 3)) ())
+
+(xclhb::define-extension-request select-port-notify +extension-name+ 11
+ ((port port) (xclhb:bool onoff) (pad bytes 3)) ())
+
+(xclhb::define-extension-request query-best-size +extension-name+ 12
+ ((port port) (xclhb:card16 vid-w) (xclhb:card16 vid-h) (xclhb:card16 drw-w)
+  (xclhb:card16 drw-h) (xclhb:bool motion) (pad bytes 3))
+ ((pad bytes 1) (xclhb:card16 actual-width) (xclhb:card16 actual-height)))
+
+(xclhb::define-extension-request set-port-attribute +extension-name+ 13
+ ((port port) (xclhb:atom attribute) (xclhb:int32 value)) ())
+
+(xclhb::define-extension-request get-port-attribute +extension-name+ 14
+ ((port port) (xclhb:atom attribute)) ((pad bytes 1) (xclhb:int32 value)))
+
+(xclhb::define-extension-request query-port-attributes +extension-name+ 15
+ ((port port))
+ ((pad bytes 1) (xclhb:card32 num-attributes) (xclhb:card32 text-size)
+  (pad bytes 16) (list attribute-info num-attributes attributes)))
+
+(xclhb::define-extension-request list-image-formats +extension-name+ 16
+ ((port port))
+ ((pad bytes 1) (xclhb:card32 num-formats) (pad bytes 20)
+  (list image-format-info num-formats format)))
+
+(xclhb::define-extension-request query-image-attributes +extension-name+ 17
+ ((port port) (xclhb:card32 id) (xclhb:card16 width) (xclhb:card16 height))
+ ((pad bytes 1) (xclhb:card32 num-planes) (xclhb:card32 data-size)
+  (xclhb:card16 width) (xclhb:card16 height) (pad bytes 12)
+  (list xclhb:card32 num-planes pitches)
+  (list xclhb:card32 num-planes offsets)))
+
+(xclhb::define-extension-request put-image +extension-name+ 18
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc) (xclhb:card32 id)
+  (xclhb:int16 src-x) (xclhb:int16 src-y) (xclhb:card16 src-w)
+  (xclhb:card16 src-h) (xclhb:int16 drw-x) (xclhb:int16 drw-y)
+  (xclhb:card16 drw-w) (xclhb:card16 drw-h) (xclhb:card16 width)
+  (xclhb:card16 height) (list xclhb:card8 (length data) data))
+ ())
+
+(xclhb::define-extension-request shm-put-image +extension-name+ 19
+ ((port port) (xclhb:drawable drawable) (xclhb:gcontext gc)
+  (xclhb-shm:seg shmseg) (xclhb:card32 id) (xclhb:card32 offset)
+  (xclhb:int16 src-x) (xclhb:int16 src-y) (xclhb:card16 src-w)
+  (xclhb:card16 src-h) (xclhb:int16 drw-x) (xclhb:int16 drw-y)
+  (xclhb:card16 drw-w) (xclhb:card16 drw-h) (xclhb:card16 width)
+  (xclhb:card16 height) (xclhb:card8 send-event) (pad bytes 3))
+ ())
+
+(export 'init)
+
+(defun init (client) (xclhb::init-extension client +extension-name+)
+ (xclhb::set-extension-event-readers client +extension-name+
+  (list (list 1 #'read-port-notify-event) (list 0 #'read-video-notify-event)))
+ (xclhb::set-extension-error-names client +extension-name+
+  (list (list 2 "bad-control") (list 1 "bad-encoding") (list 0 "bad-port")))
+ (xclhb::set-extension-reply-readers client +extension-name+
+  (list (list 17 #'read-query-image-attributes-reply)
+   (list 16 #'read-list-image-formats-reply)
+   (list 15 #'read-query-port-attributes-reply)
+   (list 14 #'read-get-port-attribute-reply)
+   (list 12 #'read-query-best-size-reply) (list 3 #'read-grab-port-reply)
+   (list 2 #'read-query-encodings-reply) (list 1 #'read-query-adaptors-reply)
+   (list 0 #'read-query-extension-reply))))
+

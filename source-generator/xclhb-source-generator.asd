@@ -2,6 +2,6 @@
   :version "0.1"
   :author "yoshida koji"
   :license "MIT"
-  :depends-on ("xmls" "str" "arrow-macros" "cl-punch")
+  :depends-on ("xmls" "str" "cl-interpol")
   :serial t
   :components ((:file "source-generator")))

@@ -111,7 +111,7 @@
   (let ((stream (make-x-stream host)))
     ;; request
     (destructuring-bind (auth-name auth-data) (get-auth-info)
-      (let* ((setup-request (make-setup-request :byte-order #x42 ; msb
+      (let* ((setup-request (make-setup-request :byte-order #x6C ; lsb
                                                 :protocol-major-version 11
                                                 :protocol-minor-version 0
                                                 :authorization-protocol-name-len (length auth-name)

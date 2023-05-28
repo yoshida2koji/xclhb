@@ -117,6 +117,9 @@
           list
           :initial-value '()))
 
+(defun structure-p (type)
+  (typep (find-class type nil) 'structure-class))
+
 (defun field->read-form (field)
   (case (first field)
     (pad (pad-field field))
@@ -126,11 +129,17 @@
                ,(read-list-form type len name))))
     (otherwise (destructuring-bind (type name) field
                  `(progn
-                    (setf ,name (,(reader-of type) buffer (offset-get offset)))
-                    (offset-inc offset ,(size-of type)))))))
+                    (setf ,name (,(reader-of type) buffer
+                                 ,(if (structure-p type) 'offset '(offset-get offset))))
+                    ,(unless (structure-p type)
+                       `(offset-inc offset ,(size-of type))))))))
+
 
 (defun fields->read-forms (fields)
   (flatten-1 (mapcar #'field->read-form fields)))
+
+(defun switch-cond-form (pred ref values)
+  `(or ,@(mapcar (lambda (value) `(,pred ,value ,ref)) values)))
 
 (defun field->write-form (field)
   (let ((field-type (first field)))
@@ -138,18 +147,22 @@
         (pad (pad-field field))
       (list (destructuring-bind (type len name) (cdr field)
               (write-list-form type len name)))
-      ((bitcase case) (destructuring-bind (ref &rest forms) (cdr field)
+      ((bitcase case) (destructuring-bind (ref _ &rest forms) (cdr field)
+                        (declare (ignore _))
                         (let ((pred (if (eql 'bitcase field-type) 'logbitp 'eql)))
                           `(progn
                              ,@(mapcar (lambda (form)
-                                         `(when (,pred ,(first form) ,ref)
-                                            ,@(flatten-1 (mapcar #'field->write-form (cdr form)))))
+                                         `(when ,(switch-cond-form pred ref (first form))
+                                            ,@(flatten-1 (mapcar #'field->write-form (second form)))))
                                        forms)))))
       (aux (field->write-form (list (first (second field)) (third field))))
       (otherwise (destructuring-bind (type name) field
                    `(progn
-                      (,(writer-of type) buffer (offset-get offset) ,name)
-                      (offset-inc offset ,(size-of type))))))))
+                      (,(writer-of type) buffer
+                       ,(if (structure-p type) 'offset '(offset-get offset))
+                       ,name)
+                      ,(unless (structure-p type)
+                         `(offset-inc offset ,(size-of type)))))))))
 
 (defun fields->write-forms (fields)
   (flatten-1 (mapcar #'field->write-form fields)))
@@ -175,15 +188,19 @@
                           ,len
                           ,name)))))
       ;;(bitcase `((* ,(size-of 'card32) (logcount ,(second field)))))
-      ((bitcase case) (destructuring-bind (ref &rest forms) (cdr field)
+      ((bitcase case) (destructuring-bind (ref _ &rest forms) (cdr field)
+                        (declare (ignore _))
                         (let ((pred (if (eql 'bitcase field-type) 'logbitp 'eql)))
                           `((+ ,@(mapcar (lambda (f)
-                                            `(if (,pred ,(first f) ,ref)
-                                                 (+ ,@(mapcar #'field-length (cdr f)))
+                                           `(if ,(switch-cond-form pred ref (first f))
+                                                 (+ ,@(mapcar #'field-length (second f)))
                                                  0))
                                           forms))))))
       (aux (field-length (second field)))
-      (otherwise (size-of (first field))))))
+      (otherwise (let ((size (size-of (first field))))
+                   (if (and (symbolp size) (fboundp size))
+                       `((,size ,(second field)))
+                       size))))))
 
 (defun collect-operand-vars (form)
   (let (vars)
@@ -241,24 +258,21 @@
     `(progn
        (defstruct+ ,name (:export-all-p t)
                    ,@(fields->slots fields))
-       (reexport ',length-form-name :%xclhb)
        (define-at-compile ,length-form-name ()
          ,(if (consp length-form)
               `',(intern-name name "%~a-length")
               length-form))
        ,(when (consp length-form)
-          `(progn
-             (reexport ',length-name :%xclhb)
-             (define-at-compile ,length-name (,name)
-               ,@length-form)))
-       (reexport ',reader-name :%xclhb)
+          `(define-at-compile ,length-name (,name)
+             ,@length-form))
        (defun ,reader-name (buffer offset)
+         (declare (ignorable buffer))
          (let ((str (,(intern-name name "make-~a"))))
            (,(intern-name name "with-~a") ,(field-names fields) str
             ,@(fields->read-forms fields))
            str))
-       (reexport ',writer-name :%xclhb)
        (defun ,writer-name (buffer offset str)
+         (declare (ignorable buffer))
          (,(intern-name name "let-~a") ,(field-names fields) str
           ,@(fields->write-forms fields))))))
 
@@ -345,8 +359,8 @@
     (pad nil)
     (list (fourth field))
     ((bitcase case) (mapcar (lambda (f)
-                               (mapcar #'request-arg (cdr f)))
-                             (cddr field)))
+                              (mapcar #'request-arg (second f)))
+                            (nthcdr 3 field)))
     (aux nil)
     (otherwise (second field))))
 
@@ -441,7 +455,7 @@
             `(progn
                (defstruct+ ,str-name (:export-all-p t :include x-reply) ,@slots)
                (defun ,reader-name (buffer offset length)
-                 (declare (ignorable length))
+                 (declare (ignorable buffer length))
                  (let ((str (,make-str)))
                    (,with-str ,field-names str
                      ,@read-forms)
