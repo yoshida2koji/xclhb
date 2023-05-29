@@ -44,10 +44,10 @@
 
 (defun card32->card8-vector (atom)
   (let ((buf (make-buffer 4)))
-    (setf (aref buf 0) (ldb (cl:byte 8 24) atom))
-    (setf (aref buf 1) (ldb (cl:byte 8 16) atom))
-    (setf (aref buf 2) (ldb (cl:byte 8 8) atom))
-    (setf (aref buf 3) (ldb (cl:byte 8 0) atom))
+    (setf (aref buf 0) (ldb (cl:byte 8 0) atom))
+    (setf (aref buf 1) (ldb (cl:byte 8 8) atom))
+    (setf (aref buf 2) (ldb (cl:byte 8 16) atom))
+    (setf (aref buf 3) (ldb (cl:byte 8 24) atom))
     buf))
 
 (defun card8-vector->card32-vector (vec)
