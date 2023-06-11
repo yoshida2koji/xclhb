@@ -3,6 +3,8 @@
 
 (in-package :xclhb-dpms)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "DPMS")
 
 (xclhb::define-extension-request get-version +extension-name+ 0

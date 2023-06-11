@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xf86vidmode)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XFree86-VidModeExtension")
 
 (export 'syncrange)

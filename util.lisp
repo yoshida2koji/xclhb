@@ -7,7 +7,9 @@
           keycode->keysym
           init-extension extension-info extension-event-base
           extension-error-base extension-major-opcode
-          set-keycode-keysym-table))
+          set-keycode-keysym-table
+          set-extension-event-handler
+          set-extension-error-handler))
 
 (defmacro with-connected-client ((client &optional host) &body body)
   `(multiple-value-bind (,client err) (x-connect ,host)
@@ -123,3 +125,8 @@
 (defun extension-major-opcode (client name)
   (query-extension-reply-major-opcode (extension-info client name)))
 
+(defun set-extension-event-handler (client extension-name code handler)
+  (set-event-handler client (+ (extension-event-base client extension-name) code) handler))
+
+(defun set-extension-error-handler (client extension-name code handler)
+  (set-error-handler client (+ (extension-error-base client extension-name) code) handler))

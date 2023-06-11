@@ -3,6 +3,8 @@
 
 (in-package :xclhb-screensaver)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "MIT-SCREEN-SAVER")
 
 (export '+kind--blanked+)

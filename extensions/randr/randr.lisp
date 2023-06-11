@@ -3,6 +3,8 @@
 
 (in-package :xclhb-randr)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "RANDR")
 
 (export 'mode)

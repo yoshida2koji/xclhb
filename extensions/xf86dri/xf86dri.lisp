@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xf86dri)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XFree86-DRI")
 
 (xclhb::define-struct drm-clip-rect

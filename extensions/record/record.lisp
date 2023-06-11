@@ -3,6 +3,8 @@
 
 (in-package :xclhb-record)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "RECORD")
 
 (export 'context)

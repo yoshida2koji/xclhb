@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xtest)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XTEST")
 
 (xclhb::define-extension-request get-version +extension-name+ 0

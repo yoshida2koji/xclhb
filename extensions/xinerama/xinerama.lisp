@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xinerama)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XINERAMA")
 
 (xclhb::define-struct screen-info

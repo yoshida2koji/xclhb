@@ -3,6 +3,8 @@
 
 (in-package :xclhb-glx)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "GLX")
 
 (export 'pixmap)

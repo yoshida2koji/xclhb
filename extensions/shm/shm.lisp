@@ -3,6 +3,8 @@
 
 (in-package :xclhb-shm)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "MIT-SHM")
 
 (export 'seg)

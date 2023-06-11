@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xprint)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XpExtension")
 
 (export 'string8)

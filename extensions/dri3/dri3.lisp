@@ -7,6 +7,8 @@
 
 (in-package :xclhb-dri3)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "DRI3")
 
 (xclhb::define-extension-request query-version +extension-name+ 0

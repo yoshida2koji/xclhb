@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xc_misc)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XC-MISC")
 
 (xclhb::define-extension-request get-version +extension-name+ 0

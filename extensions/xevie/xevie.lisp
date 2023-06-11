@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xevie)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XEVIE")
 
 (xclhb::define-extension-request query-version +extension-name+ 0

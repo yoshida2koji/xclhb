@@ -412,6 +412,7 @@
                 (write-form (defpackage-form package-name)))
               (write-form (in-package-form package-name))
               (when (extension-p)
+                (write-form '("export" "'+extension-name+"))
                 (write-form `(,#?"${ *package-base-name* }:defglobal" "+extension-name+" ,(dq extension-name))))
               (dolist (node  children)
                 (write-form (process-top-level-node node)))

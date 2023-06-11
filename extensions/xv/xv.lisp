@@ -7,6 +7,8 @@
 
 (in-package :xclhb-xv)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XVideo")
 
 (export 'port)

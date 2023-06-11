@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xselinux)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "SELinux")
 
 (xclhb::define-extension-request query-version +extension-name+ 0

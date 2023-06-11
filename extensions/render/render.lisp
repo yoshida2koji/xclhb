@@ -3,6 +3,8 @@
 
 (in-package :xclhb-render)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "RENDER")
 
 (export '+pict-type--indexed+)

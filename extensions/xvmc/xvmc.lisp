@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xvmc)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XVideo-MotionCompensation")
 
 (export 'context)

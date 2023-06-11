@@ -3,6 +3,8 @@
 
 (in-package :xclhb-composite)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "Composite")
 
 (export '+redirect--automatic+)

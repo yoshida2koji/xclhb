@@ -3,6 +3,8 @@
 
 (in-package :xclhb-damage)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "DAMAGE")
 
 (export 'damage)

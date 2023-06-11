@@ -3,6 +3,8 @@
 
 (in-package :xclhb-xfixes)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "XFIXES")
 
 (xclhb::define-extension-request query-version +extension-name+ 0

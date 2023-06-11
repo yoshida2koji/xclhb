@@ -3,6 +3,8 @@
 
 (in-package :xclhb-present)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "Present")
 
 (export '+event--configure-notify+)

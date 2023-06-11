@@ -7,6 +7,8 @@
 
 (in-package :xclhb-res)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "X-Resource")
 
 (xclhb::define-struct client

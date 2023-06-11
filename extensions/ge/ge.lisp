@@ -3,6 +3,8 @@
 
 (in-package :xclhb-ge)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "Generic Event Extension")
 
 (xclhb::define-extension-request query-version +extension-name+ 0

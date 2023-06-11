@@ -3,6 +3,8 @@
 
 (in-package :xclhb-bigreq)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "BIG-REQUESTS")
 
 (xclhb::define-extension-request enable +extension-name+ 0 ()

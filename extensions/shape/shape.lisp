@@ -3,6 +3,8 @@
 
 (in-package :xclhb-shape)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "SHAPE")
 
 (export 'op)

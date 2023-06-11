@@ -3,6 +3,8 @@
 
 (in-package :xclhb-sync)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "SYNC")
 
 (export 'alarm)

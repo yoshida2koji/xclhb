@@ -3,6 +3,8 @@
 
 (in-package :xclhb-dri2)
 
+(export '+extension-name+)
+
 (xclhb:defglobal +extension-name+ "DRI2")
 
 (export '+attachment--buffer-front-left+)
