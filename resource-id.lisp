@@ -1,6 +1,6 @@
 (in-package :xclhb)
 
-(export '(allocate-resource-id))
+(export '(allocate-resource-id free-resource-id))
 
 ;;;; referred to clx
 
@@ -13,11 +13,26 @@
            (cl:byte (integer-length mask) first)))))
 
 (defun allocate-resource-id (client)
-  (with-client (resource-id-count resource-id-byte-spec resource-id-base resource-id-list) client
-    (let ((id (dpb (incf resource-id-count)
-                   resource-id-byte-spec
-                   resource-id-base)))
-      (push id resource-id-list)
-      id)))
+  "Returns nil if there is no resource id available for allocation"
+  (with-client (resource-id-count resource-id-byte-spec resource-id-base resource-id-table) client
+    (let ((begin resource-id-count))
+      (labels ((find-unused-id ()
+                 (let ((id (dpb resource-id-count
+                                resource-id-byte-spec
+                                resource-id-base)))
+                   (cond ((= id resource-id-base)
+                          (setf resource-id-count 1)
+                          (find-unused-id))
+                         ((gethash id resource-id-table)
+                          (incf resource-id-count)
+                          (if (= begin resource-id-count)
+                              nil
+                              (find-unused-id)))
+                         (t (setf (gethash id resource-id-table) id)
+                            id)))))
+        (find-unused-id)))))
 
+(defun free-resource-id (client id)
+  (remhash id (client-resource-id-table client))
+  (values))
 
