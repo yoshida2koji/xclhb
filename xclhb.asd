@@ -2,7 +2,7 @@
   :version "0.2"
   :author "yoshida koji"
   :license "MIT"
-  :depends-on ((:version "struct+" "0.2"))
+  :depends-on ((:version "struct+" "0.3"))
   :serial t
   :components ((:file "package")
                (:file "misc")
