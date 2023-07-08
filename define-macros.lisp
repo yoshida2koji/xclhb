@@ -434,7 +434,7 @@
              ,(when reply-fields
                 `(push (cons seq-no (make-reply-collback :major-opcode ,code :minor-opcode ,minor-opcode :fn callback))
                        (client-request-reply-callback-table client)))
-             (setf (client-request-sequence-number client) (+ seq-no 1))
+             (setf (client-request-sequence-number client) (if (= seq-no #xffff) 0 (1+ seq-no)))
              seq-no)))
        ,(when reply-fields
           (let* ((sync-name (intern-name name "~a-sync"))
