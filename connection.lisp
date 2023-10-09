@@ -54,13 +54,15 @@
 
 (defun get-auth-info ()
   (let ((auth-file-path (uiop:getenv "XAUTHORITY")))
-    (with-open-file (in auth-file-path :element-type '(unsigned-byte 8)
-                                       :if-does-not-exist nil)
-      (when in
-        (destructuring-bind (family address number name data)
-            (read-xauth-entry in)
-          (declare (ignore family address number))
-          (list name data))))))
+    (if auth-file-path
+        (with-open-file (in auth-file-path :element-type '(unsigned-byte 8)
+                                           :if-does-not-exist nil)
+          (when in
+            (destructuring-bind (family address number name data)
+                (read-xauth-entry in)
+              (declare (ignore family address number))
+              (list name data))))
+      (list (make-array 0 :element-type 'card8) (make-array 0 :element-type 'card8)))))
 
 
 (defun read-setup-response (stream)
@@ -81,9 +83,10 @@
 
 #+ (or sbcl ecl)
 (defun make-x-stream (&optional host)
-  (let ((socket (if host
-                    (make-instance 'sb-bsd-sockets:inet-socket :type :stream :protocol :tcp)
-                    (make-instance 'sb-bsd-sockets:local-socket :type :stream))))
+  (let ((socket #-win32 (if host
+                            (make-instance 'sb-bsd-sockets:inet-socket :type :stream :protocol :tcp)
+                            (make-instance 'sb-bsd-sockets:local-socket :type :stream))
+                #+win32 (make-instance 'sb-bsd-sockets:inet-socket :type :stream :protocol :tcp)))
     (if host
         (sb-bsd-sockets:socket-connect socket
                                        (sb-bsd-sockets:host-ent-address (sb-bsd-sockets:get-host-by-name host))
