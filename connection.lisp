@@ -131,5 +131,7 @@
                          :resource-id-byte-spec (make-byte-spec-for-resource-id resource-id-mask)))
           (values nil response)))))
 
+(export '(x-connect))
+
 
 
