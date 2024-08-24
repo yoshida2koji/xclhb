@@ -95,6 +95,8 @@
   (if-let (syms (cdr (assoc keycode (client-keycode-keysym-table client))))
     (let* ((n (if (logbitp +mod-mask--shift+ mod-state) 1 0))
            (sym (nth n syms)))
+      (when (= sym 0)
+        (setf sym (nth 0 syms)))
       (cond ((= sym 0) nil)
             ((>= sym #xff00)
              (cdr (assoc sym +keycode-keysym-table-non-character+)))

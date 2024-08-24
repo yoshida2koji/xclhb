@@ -63,4 +63,5 @@
 (defun free-shm-segment (segment)
   (detach-segment (shm-segment-data segment))
   (free (shm-segment-id segment))
+  (tg:cancel-finalization segment)
   (values))
