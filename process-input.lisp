@@ -1,7 +1,7 @@
 (in-package :xclhb)
 
 (export '(set-default-error-handler set-error-handler
-          set-event-handler process-input process-input-one))
+          get-event-handler set-event-handler process-input process-input-one))
 
 ;;; error
 (defun set-default-error-handler (client handler)
@@ -41,14 +41,17 @@
           (setf request-reply-callback-table (delete seq-no request-reply-callback-table :key #'car)))))))
 
 ;;; event
+(defun get-event-handler (client code)
+  (aref (client-event-handlers client) code))
+
 (defun set-event-handler (client code handler)
   (setf (aref (client-event-handlers client) code) handler))
 
 (defun process-event (client code buf)
-  (let ((%code (ldb (cl:byte 7 0) code )))
+  (let ((%code (ldb (cl:byte 7 0) code)))
     (if-let ((reader (aref *read-event-functions* %code))
              (handler (aref (client-event-handlers client) %code)))
-      (let ((offset (make-offset 1)))
+      (let ((offset (make-offset 0)))
         (declare (dynamic-extent offset))
         (funcall handler (funcall reader buf offset))))))
 

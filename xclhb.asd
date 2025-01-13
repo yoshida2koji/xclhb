@@ -1,5 +1,5 @@
 (defsystem "xclhb"
-  :version "0.3"
+  :version "0.4"
   :author "yoshida koji"
   :license "MIT"
   :depends-on ((:version "struct+" "0.2"))

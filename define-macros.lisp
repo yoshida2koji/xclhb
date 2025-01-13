@@ -277,7 +277,8 @@
           ,@(fields->write-forms fields))))))
 
 (export 'x-event)
-(defstruct x-event)
+(defstruct x-event
+  (code 0 :type card8))
 
 (defmacro define-event (name code fields &optional offset)
   (unless (member name '(client-message ge-generic))
@@ -292,15 +293,19 @@
            ,@(fields->slots fields))
          (defun ,reader-name (buffer offset)
            (let ((str (,(intern-name base-name "make-~a"))))
-             (,(intern-name base-name "with-~a") ,(field-names fields) str
+             (,(intern-name base-name "with-~a") (code ,@(field-names fields)) str
               ;; add sequence number pad
+              (setf code (read-card8 buffer (offset-get offset)))
+              (offset-inc offset 1)
               ,@(fields->read-forms (insert '(pad bytes 2) fields 1)))
              str))
          ,(unless offset
             `(setf (aref *read-event-functions* ,code) #',reader-name))
          (defun ,writer-name (buffer offset str)
-           (,(intern-name base-name "let-~a") ,(field-names fields) str
+           (,(intern-name base-name "let-~a") (code ,@(field-names fields)) str
             ;; add sequence number pad
+            (write-card8 buffer (offset-get offset) code)
+            (offset-inc offset 1)
             ,@(fields->write-forms (insert '(pad bytes 2) fields 1))))
          ,(unless offset
             `(setf (aref *write-event-functions* ,code) #',writer-name))))))

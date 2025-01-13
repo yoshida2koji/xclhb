@@ -16,7 +16,9 @@
                         (simple-array card32 (5)))))
   (defun read-client-message-event (buffer offset)
     (let ((str (make-client-message-event)))
-      (with-client-message-event (format window type) str
+      (with-client-message-event (code format window type) str
+        (setf code (read-card8 buffer (offset-get offset)))
+        (offset-inc offset 1)
         (setf format (read-card8 buffer (offset-get offset)))
         (offset-inc offset 1) (offset-inc offset 2)
         (setf window (read-card32 buffer (offset-get offset)))
