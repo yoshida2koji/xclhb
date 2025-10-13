@@ -81,6 +81,10 @@
                        buffer (make-offset))
               status))))
 
+(defun socket-path ()
+  (let ((display (uiop:getenv "DISPLAY")))
+    (cl:format nil "/tmp/.X11-unix/X~a" (if display (schar display (1+ (position #\: display))) 0))))
+
 #+ (or sbcl ecl)
 (defun make-x-stream (&optional host)
   (let ((socket #-win32 (if host
@@ -91,7 +95,7 @@
         (sb-bsd-sockets:socket-connect socket
                                        (sb-bsd-sockets:host-ent-address (sb-bsd-sockets:get-host-by-name host))
                                        6000)
-        (sb-bsd-sockets:socket-connect socket "/tmp/.X11-unix/X0"))
+        (sb-bsd-sockets:socket-connect socket (socket-path)))
     (sb-bsd-sockets:socket-make-stream socket
                                        :element-type '(unsigned-byte 8)
                                        :auto-close t
@@ -108,7 +112,7 @@
       (ccl::make-socket :connect :active
                     :address-family :file
                     :auto-close t
-                        :remote-filename "/tmp/.X11-unix/X0")))
+                        :remote-filename (socket-path))))
 
 (defun x-connect (&optional host)
   (let ((stream (make-x-stream host)))
